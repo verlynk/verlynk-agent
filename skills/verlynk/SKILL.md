@@ -24,7 +24,7 @@ Setup: [HOW_TO_CONNECT.md](../../HOW_TO_CONNECT.md) · Auth details: [AUTHENTICA
 | `create-posts` | Create, schedule, publish, draft, or queue posts | No |
 | `get-posts` | List and filter posts by date, status, platform | Yes |
 
-Do **not** call tools not listed above — AI campaign tools are not live.
+Do **not** call tools not listed above. Only the three live tools are supported.
 
 ## Workspace context
 
@@ -134,10 +134,9 @@ For **scheduled, published, or queued** posts only (not drafts):
 
 ## Not available via MCP
 
-- AI campaign tools (`create-campaign`, etc.)
-- Post analytics, channel connect, inbox, webhooks
+- AI campaign scheduling, post analytics, channel connect, inbox, webhooks
 
-Use [docs.verlynk.com](https://docs.verlynk.com) Public API for these.
+Use [docs.verlynk.com](https://docs.verlynk.com) Public API or the Verlynk dashboard for these.
 
 ## Links
 

@@ -57,16 +57,13 @@ Details: [OPERATIONS.md](./OPERATIONS.md)
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| AI campaign scheduling | **Not live** | Backend tools exist but are disabled |
-| `create-campaign` | **Not live** | Commented out in MCP server |
-| `get-ai-campaign-posts` | **Not live** | Commented out in MCP server |
-| `approve-ai-post` | **Not live** | Commented out in MCP server |
-| `discard-ai-post` | **Not live** | Commented out in MCP server |
-| `schedule-ai-campaign` | **Not live** | Commented out in MCP server |
-| ChatGPT channel widget | **Not live** | Widget registration disabled |
+| AI campaign scheduling | **Not available** | Use Public API or Verlynk dashboard |
+| ChatGPT channel widget | **Not available** | — |
 | OAuth device flow for CLI | **Not available** | Use MCP API key instead |
-| Inbox / DMs | **Not in MCP** | Scope defined; no MCP tool yet |
-| Webhooks | **Not in MCP** | Scope defined; no MCP tool yet |
+| Inbox / DMs | **Not available via MCP** | Use Public API or dashboard |
+| Webhooks | **Not available via MCP** | Use Public API |
+| Post analytics | **Not available via MCP** | Use Public API |
+| Channel connect | **Not available via MCP** | Use Public API or dashboard |
 
 ---
 

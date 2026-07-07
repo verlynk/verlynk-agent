@@ -12,7 +12,7 @@ Instructions for publishing this repo to GitHub.
 From this directory:
 
 ```bash
-cd /Users/geoffrey/Developer/verlynk-agent
+cd <repo-root>
 
 # Create public repo and push (first time)
 gh repo create verlynk/verlynk-agent \

@@ -145,6 +145,7 @@ Details: [docs.verlynk.com/reference/rate-limits](https://docs.verlynk.com/refer
 | 403 | `API_KEY_SCOPE_DENIED` | Key lacks `mcp:access` |
 | 429 | `MCP_RATE_LIMIT_EXCEEDED` | Minute limit hit |
 | 429 | `MCP_BURST_LIMIT_EXCEEDED` | Burst limit hit |
+| 429 | `API_RATE_LIMIT_EXCEEDED` | Org plan-based limit (API key auth only; 60–1200 req/min) |
 | 500 | `Internal Server Error` | Server error — retry with backoff |
 
 Tool-level errors (e.g. `Missing required context`, validation failures) are returned inside the MCP JSON-RPC response.
@@ -153,7 +154,7 @@ Tool-level errors (e.g. `Missing required context`, validation failures) are ret
 
 ## Related
 
-- [AUTHENTICATION.md](./AUTHENTICATION.md)
+- [HOW_TO_CONNECT.md](./HOW_TO_CONNECT.md)
 - [SECURITY.md](./SECURITY.md)
 - [OPERATIONS.md](./OPERATIONS.md)
 - [SUPPORT.md](./SUPPORT.md)

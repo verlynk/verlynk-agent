@@ -30,7 +30,7 @@
       "type": "object",
       "required": ["mediaUrl", "mimeType"],
       "properties": {
-        "mediaUrl": { "type": "string", "format": "uri" },
+        "mediaUrl": { "type": "string" },
         "mimeType": { "type": "string" }
       }
     },
@@ -111,7 +111,7 @@
       "properties": {
         "channelId": {
           "type": "string",
-          "description": "From list-channels → channels[].id"
+          "description": "From list-channels → channels[].channelId"
         },
         "postType": {
           "type": "string",
@@ -142,7 +142,7 @@
                   "required": ["timezone", "utc"],
                   "properties": {
                     "timezone": { "type": "string" },
-                    "utc": { "type": "string", "format": "date-time" }
+                    "utc": { "type": "string" }
                   }
                 }
               }
@@ -157,7 +157,7 @@
                   "required": ["timezone", "utc"],
                   "properties": {
                     "timezone": { "type": "string" },
-                    "utc": { "type": "string", "format": "date-time" }
+                    "utc": { "type": "string" }
                   }
                 }
               }
@@ -188,8 +188,8 @@
                   "properties": {
                     "daysOfWeek": { "type": "string" },
                     "timezone": { "type": "string" },
-                    "utcStartDate": { "type": "string", "format": "date-time" },
-                    "utcEndDate": { "type": "string", "format": "date-time" }
+                    "utcStartDate": { "type": "string" },
+                    "utcEndDate": { "type": "string" }
                   }
                 }
               }
@@ -205,8 +205,8 @@
                   "properties": {
                     "dayOfMonth": { "type": "integer", "minimum": 1, "maximum": 31 },
                     "timezone": { "type": "string" },
-                    "utcStartDate": { "type": "string", "format": "date-time" },
-                    "utcEndDate": { "type": "string", "format": "date-time" }
+                    "utcStartDate": { "type": "string" },
+                    "utcEndDate": { "type": "string" }
                   }
                 }
               }
@@ -223,7 +223,7 @@
                     "timezone": { "type": "string" },
                     "utc": {
                       "type": "array",
-                      "items": { "type": "string", "format": "date-time" }
+                      "items": { "type": "string" }
                     }
                   }
                 }

@@ -278,6 +278,25 @@ JSON schema: [`schemas/get-posts.input.json`](./schemas/get-posts.input.json)
 }
 ```
 
+#### Post object key fields
+
+Each item in `structuredContent.posts[]` includes:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `postId` | string (UUID) | Post identifier |
+| `postType` | string | e.g. `post`, `video`, `reel` |
+| `postStatus` | string | e.g. `SCHEDULED`, `PUBLISHED`, `QUEUED`, `FAILED` |
+| `publishAt` | string (ISO 8601) | Scheduled or actual publish time |
+| `metaData` | object | Post content (`contents[]`, platform fields) |
+| `schedule` | object | Schedule type and details |
+| `channel` | object | `channelId`, `channelName`, `platformName`, `profileUrl`, `username` |
+| `author` | object | Author user info |
+| `createdAt` | string (ISO 8601) | Creation timestamp |
+| `errorMessage` | string | Present when `postStatus` is `FAILED` |
+
+Full response shape: [docs.verlynk.com/api](https://docs.verlynk.com/api)
+
 ### Example
 
 ```json

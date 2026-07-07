@@ -6,25 +6,18 @@ Thank you for helping improve Verlynk agent documentation.
 
 | Include | Exclude |
 | --- | --- |
-| MCP tool reference for **live** tools | Dormant/unreleased backend features |
+| MCP tool reference for **live** tools | Dormant/unreleased features |
 | Agent skill (`SKILL.md`) | Backend source code |
-| JSON schemas derived from backend Zod/Joi | Secrets, internal URLs, env values |
+| JSON schemas for tool inputs | Secrets, internal URLs, env values |
 | Example payloads and curl scripts | Full OpenAPI duplication |
 | Setup templates for MCP clients | npm CLI packages |
+| Public API endpoints and error codes | Internal file paths, DAO/service names, infra details |
 
 ## Source of truth
 
-When updating tool documentation, verify against the Verlynk backend:
+When updating tool documentation, verify behavior against the **private Verlynk backend MCP module** before merging. Compare input schemas, response field names, rate-limit codes, and auth requirements with the live server.
 
-| Topic | Backend path |
-| --- | --- |
-| MCP tools | `src/features/mcp/tools/` |
-| Input schemas | `src/features/mcp/mcpSchema.ts` |
-| Auth | `src/features/mcp/mcpService.ts`, `mcpContext.ts` |
-| Rate limits | `src/features/mcp/mcpRateLimiter.ts` |
-| Post validation | `src/features/post/services/validatePostService.ts` |
-| Channel list | `src/features/social/socialDao.ts` → `getAllSocialProfilesByUserDao` |
-| Media presign | `src/features/publicV1/media/` |
+Verlynk maintainers: use internal engineering docs for backend file references.
 
 ## Making changes
 
@@ -32,7 +25,8 @@ When updating tool documentation, verify against the Verlynk backend:
 2. Update [CHANGELOG.md](./CHANGELOG.md) under `[Unreleased]` or a new version
 3. Cross-check [FEATURES.md](./FEATURES.md) scope boundary
 4. Ensure [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md) stays in sync with [MCP_TOOLS.md](./MCP_TOOLS.md)
-5. Submit a pull request with a clear description of what changed and why
+5. Run the security checklist below
+6. Submit a pull request with a clear description of what changed and why
 
 ## Style guide
 
@@ -41,6 +35,17 @@ When updating tool documentation, verify against the Verlynk backend:
 - Include `errorCode` values where applicable
 - Link to [docs.verlynk.com](https://docs.verlynk.com) instead of duplicating OpenAPI
 - Keep agent-facing language concise and actionable
+
+## Security checklist (required before merge)
+
+This is a **public** repository. Confirm:
+
+- [ ] No real API keys, JWTs, or `.env` values
+- [ ] No internal file paths (`src/features/`, DAO/service names)
+- [ ] No unreleased tool names or implementation state ("commented out", "disabled in server")
+- [ ] No maintainer-local paths (`/Users/`, `localhost`, `ngrok`)
+- [ ] No infra details (Redis, DB, queue names, AWS resource IDs)
+- [ ] Only **live, publicly callable** API behavior is documented
 
 ## Syncing with verlynk-docs
 

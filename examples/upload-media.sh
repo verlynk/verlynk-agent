@@ -29,7 +29,8 @@ FILENAME="$(basename "$FILE_PATH")"
 FILE_SIZE="$(wc -c < "$FILE_PATH" | tr -d ' ')"
 
 case "${FILENAME##*.}" in
-  jpg|jpeg) CONTENT_TYPE="image/jpeg" ;;
+  jpg)      CONTENT_TYPE="image/jpg" ;;
+  jpeg)     CONTENT_TYPE="image/jpeg" ;;
   png)      CONTENT_TYPE="image/png" ;;
   gif)      CONTENT_TYPE="image/gif" ;;
   webp)     CONTENT_TYPE="image/webp" ;;

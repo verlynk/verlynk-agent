@@ -2,6 +2,27 @@
 
 All notable changes to this documentation repo are listed here.
 
+## [1.3.0] - 2026-07-07
+
+### Added
+
+- Security checklist in [CONTRIBUTING.md](./CONTRIBUTING.md) for public-repo contributions
+- CI workflow (`.github/workflows/validate.yml`) — JSON schema validation, example validation, sensitive-pattern scan
+- `get-posts` key response fields table in [MCP_TOOLS.md](./MCP_TOOLS.md)
+- `API_RATE_LIMIT_EXCEEDED` documented in [AUTHENTICATION.md](./AUTHENTICATION.md) and [OPERATIONS.md](./OPERATIONS.md)
+
+### Fixed
+
+- `channelId` description in `schemas/create-posts.input.json` (`channels[].channelId`, not `id`)
+- `image/jpg` MIME mapping in `examples/upload-media.sh`
+- [AUTHENTICATION.md](./AUTHENTICATION.md) Related section self-link
+- [PUBLISHING.md](./PUBLISHING.md) maintainer-specific path
+
+### Security
+
+- Removed internal backend file paths from [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Generalized unreleased features in [FEATURES.md](./FEATURES.md) and [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md) — no tool names or implementation state
+
 ## [1.2.0] - 2026-07-07
 
 ### Added

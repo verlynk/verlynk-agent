@@ -16,7 +16,7 @@ Security practices for Verlynk MCP integrations.
 export VERLYNK_MCP_KEY="verlynk_..."
 
 # Bad — committed to repo
-"Authorization: Bearer verlynk_live_abc123..."
+"Authorization: Bearer verlynk_abc123..."
 ```
 
 ---

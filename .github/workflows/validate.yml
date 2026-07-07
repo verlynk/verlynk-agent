@@ -1,0 +1,64 @@
+name: Validate docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install validators
+        run: npm install -g ajv-cli@5
+
+      - name: Validate JSON syntax
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y jq
+          for f in schemas/*.json examples/create-*.json; do
+            echo "Checking JSON syntax: $f"
+            jq empty "$f"
+          done
+
+      - name: Validate JSON schemas
+        run: |
+          for schema in schemas/*.json; do
+            echo "Compiling $schema"
+            ajv compile -s "$schema" --spec=draft7
+          done
+
+      - name: Validate create-posts examples
+        run: |
+          for example in examples/create-*.json; do
+            echo "Validating $example"
+            ajv validate -s schemas/create-posts.input.json -d "$example" --spec=draft7
+          done
+
+      - name: Check for sensitive patterns
+        run: |
+          set -e
+          sudo apt-get install -y ripgrep
+          EXCLUDE=(--glob '!CHANGELOG.md' --glob '!.github/**' --glob '!CONTRIBUTING.md')
+          PATTERNS=(
+            '/Users/geoffrey/Developer'
+            'ngrok-free.app'
+            'localhost:3'
+            'src/features/mcp'
+          )
+          FAILED=0
+          for pattern in "${PATTERNS[@]}"; do
+            if rg -n "$pattern" "${EXCLUDE[@]}" .; then
+              echo "ERROR: sensitive pattern found: $pattern"
+              FAILED=1
+            fi
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+          echo "No sensitive patterns found."

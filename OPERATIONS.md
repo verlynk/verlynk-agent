@@ -41,13 +41,14 @@ Before production use, confirm:
 
 ### API key org limits (MCP with API key auth)
 
-Organizations using API key auth on MCP may also hit org-level Public API rate limits based on plan size (60–1200 req/min). JWT/OAuth sessions are not subject to API key rate limiting.
+Organizations using API key auth on MCP may also hit org-level Public API rate limits based on plan size (60–1200 req/min, `errorCode: API_RATE_LIMIT_EXCEEDED`). JWT/OAuth sessions are not subject to API key rate limiting.
 
 ### Recommended retry policy
 
 ```
 429 MCP_BURST_LIMIT_EXCEEDED  → retry after 10–30 s
 429 MCP_RATE_LIMIT_EXCEEDED   → retry after 60 s
+429 API_RATE_LIMIT_EXCEEDED   → retry after 60 s (API key auth only)
 500 Internal Server Error     → retry up to 3× with exponential backoff (1 s, 2 s, 4 s)
 4xx validation errors         → do not retry; fix the request
 ```
