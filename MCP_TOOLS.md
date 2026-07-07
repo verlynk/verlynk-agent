@@ -1,22 +1,37 @@
 # MCP Tools Reference
 
-Full reference for the 3 active tools on the Verlynk MCP server.
+Full reference for the 3 active tools on the Verlynk MCP server (`verlynk-social-mcp` v1.0.0).
 
-**Server:** `https://verlynk.com/api/public/mcp`
+| Property | Value |
+| --- | --- |
+| **Endpoint** | `POST https://verlynk.com/api/public/mcp` |
+| **Protocol** | MCP over HTTP — stateless JSON-RPC (`StreamableHTTPServerTransport`) |
+| **Auth** | `Authorization: Bearer <token>` — see [AUTHENTICATION.md](./AUTHENTICATION.md) |
+| **OIDC metadata** | `GET https://verlynk.com/api/public/mcp/.well-known/openid-configuration` |
 
-**Auth:** `Authorization: Bearer YOUR_MCP_KEY` (scope: `mcp:access`)
+> `GET /api/public/mcp` returns `405 Method Not Allowed`. Clients must use `POST` only.
 
 ---
 
 ## Context injection (`_context`)
 
-All tools accept an optional `_context` field with `userId`, `orgId`, and `projectId`. **Do not pass this manually** — the server auto-populates it from your auth token. Agents should omit `_context` entirely.
+All tools accept an optional `_context` object (`userId`, `orgId`, `projectId`). **Never pass this manually** — the server merges it from your auth token and the user's default org/profile.
+
+If context resolution fails:
+
+| Error | Cause |
+| --- | --- |
+| `Missing required context` | Auth failed or user has no default org/profile |
+| `User does not have default organization or project set` | Set a default profile in the Verlynk app |
+| `API key org does not match user default organization` | MCP key org ≠ user's default org |
+
+See [AUTHENTICATION.md#workspace-context-default-profile](./AUTHENTICATION.md#workspace-context-default-profile).
 
 ---
 
 ## `list-channels`
 
-Returns connected social media accounts (channels) for the authenticated user's default profile.
+Returns social accounts the authenticated user can publish to in their **default profile**. Only **connected** channels are included.
 
 ### Annotations
 
@@ -29,13 +44,13 @@ Returns connected social media accounts (channels) for the authenticated user's 
 
 ### Input
 
-No required fields. Optional `_context` (auto-populated).
-
-No JSON schema file — this tool has no user-facing input beyond auto-populated `_context`.
+JSON schema: [`schemas/list-channels.input.json`](./schemas/list-channels.input.json)
 
 ```json
 {}
 ```
+
+No filter parameters (`platform`, `query`, etc.) are supported. Filter the response client-side after fetching.
 
 ### Response
 
@@ -48,9 +63,13 @@ No JSON schema file — this tool has no user-facing input beyond auto-populated
   "structuredContent": {
     "channels": [
       {
-        "id": "channel-uuid",
-        "name": "Acme Corp",
-        "platform": "linkedin",
+        "channelId": "550e8400-e29b-41d4-a716-446655440000",
+        "channelName": "Acme Corp",
+        "platformName": "linkedin",
+        "profileType": "page",
+        "profileId": "provider-profile-id",
+        "profileUrl": "https://linkedin.com/company/acme",
+        "domain": "linkedin.com",
         "username": "acme-corp"
       }
     ]
@@ -58,7 +77,18 @@ No JSON schema file — this tool has no user-facing input beyond auto-populated
 }
 ```
 
-Channel objects include `id` (use as `channelId` in `create-posts`), `platform`, `name`, and profile metadata.
+#### Channel object fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `channelId` | string (UUID) | Use as `channelId` in `create-posts` |
+| `channelName` | string | Display name |
+| `platformName` | string | Platform identifier (e.g. `linkedin`, `x`, `instagram`) |
+| `profileType` | string | Provider profile type (e.g. `page`, `profile`) |
+| `profileId` | string | Provider-side profile ID |
+| `profileUrl` | string | Public profile URL |
+| `domain` | string | Platform domain |
+| `username` | string | Handle / username |
 
 ### Example prompts
 
@@ -66,12 +96,7 @@ Channel objects include `id` (use as `channelId` in `create-posts`), `platform`,
 - *Which LinkedIn accounts do I have connected in Verlynk?*
 - *Show my X/Twitter channels*
 
-### Errors
-
-| Error | Cause |
-| --- | --- |
-| `Missing required context` | Invalid or expired auth token |
-| `401 Unauthorized` | Missing or invalid MCP key |
+Filter by platform in the agent: `channels.filter(c => c.platformName === 'linkedin')`.
 
 ---
 
@@ -89,6 +114,8 @@ Creates posts as draft, scheduled, published, queued, or pending approval.
 | `destructiveHint` | `false` |
 | `openWorldHint` | `true` — publishes to external social platforms |
 
+> Confirm with the user before `PUBLISH` or `SCHEDULE` unless explicitly requested. See [SECURITY.md](./SECURITY.md).
+
 ### Input
 
 JSON schema: [`schemas/create-posts.input.json`](./schemas/create-posts.input.json)
@@ -98,26 +125,16 @@ JSON schema: [`schemas/create-posts.input.json`](./schemas/create-posts.input.js
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `action` | string | Yes | `DRAFT`, `SCHEDULE`, `PUBLISH`, `QUEUE`, or `NEEDS_APPROVAL` |
-| `posts` | array | Yes | One or more post objects (see below) |
+| `posts` | array | Yes | One or more post objects |
 
 #### Post object (`posts[]`)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `channelId` | string | Yes | From `list-channels` → `channels[].id` |
+| `channelId` | string (UUID) | Yes | From `list-channels` → `channels[].channelId` |
 | `postType` | string | Yes | `post`, `reel`, `story`, `video`, `thread`, `pin`, `offer`, `event` |
 | `metaData` | object | Yes | Content and platform-specific fields |
-| `schedule` | object | Yes | Discriminated union by `type` (see Scheduling) |
-
-#### `metaData` fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `contents` | array | Post content blocks (see below) |
-| `firstComment` | string | Optional first comment (not for Mastodon, Bluesky, Threads, Pinterest) |
-| `link` | string | Optional link attachment |
-
-**Platform-specific fields** go inside `metaData`. See [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md).
+| `schedule` | object | Yes | Discriminated union by `type` |
 
 #### `metaData.contents[]`
 
@@ -125,30 +142,29 @@ JSON schema: [`schemas/create-posts.input.json`](./schemas/create-posts.input.js
 | --- | --- | --- |
 | `title` | string | Post title (YouTube, Pinterest, etc.) |
 | `text` | string | Post body / caption |
-| `media` | array | Media attachments |
+| `media` | array | `{ mediaUrl, mimeType }` attachments |
 
-#### `metaData.contents[].media[]`
+#### Media handling
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `mediaUrl` | string | Public URL to the media file |
-| `mimeType` | string | e.g. `image/jpeg`, `video/mp4` |
+The server downloads `mediaUrl`, stores media in Verlynk S3, and validates per channel. Supported sources:
 
-> For local files, upload first via [MEDIA.md](./MEDIA.md) and use the returned `publicUrl` as `mediaUrl`. Google Drive share links are also supported.
+- `publicUrl` from [media presign](./MEDIA.md) (recommended for TikTok, Instagram, YouTube)
+- Public HTTPS URLs
+- Google Drive share links (converted server-side)
 
 ### Scheduling (`schedule`)
 
-The `schedule.type` field determines the shape of `schedule.details`:
+| `schedule.type` | `details` fields | Typical `action` |
+| --- | --- | --- |
+| `NOW` | `timezone` | `PUBLISH` |
+| `ONCE` | `timezone`, `utc` (ISO 8601) | `SCHEDULE` |
+| `DRAFT` | `timezone`, `utc` (ISO 8601) | `DRAFT` |
+| `QUEUE` | `timezone`, `queueType` (`NEXT` or `LAST`) | `QUEUE` |
+| `RECURRING_WEEKLY` | `timezone`, `daysOfWeek`, `utcStartDate`, `utcEndDate` | `SCHEDULE` |
+| `RECURRING_MONTHLY` | `timezone`, `dayOfMonth` (1–31), `utcStartDate`, `utcEndDate` | `SCHEDULE` |
+| `RECURRING_CUSTOM` | `timezone`, `utc` (array of ISO 8601 datetimes) | `SCHEDULE` |
 
-| `schedule.type` | `details` fields |
-| --- | --- |
-| `NOW` | `timezone` |
-| `ONCE` | `timezone`, `utc` (ISO 8601 datetime) |
-| `DRAFT` | `timezone`, `utc` (ISO 8601 datetime) |
-| `QUEUE` | `timezone`, `queueType` (`NEXT` or `LAST`) |
-| `RECURRING_WEEKLY` | `timezone`, `daysOfWeek`, `utcStartDate`, `utcEndDate` |
-| `RECURRING_MONTHLY` | `timezone`, `dayOfMonth` (1–31), `utcStartDate`, `utcEndDate` |
-| `RECURRING_CUSTOM` | `timezone`, `utc` (array of ISO 8601 datetimes) |
+Platform-specific `metaData` fields: [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md).
 
 ### Response
 
@@ -164,14 +180,16 @@ The `schedule.type` field determines the shape of `schedule.details`:
 }
 ```
 
-### Example: scheduled text post
+`status: "accepted"` means validation passed and posts are queued for processing — not yet published.
+
+### Example
 
 ```json
 {
   "action": "SCHEDULE",
   "posts": [
     {
-      "channelId": "YOUR_CHANNEL_ID",
+      "channelId": "550e8400-e29b-41d4-a716-446655440000",
       "postType": "post",
       "metaData": {
         "contents": [
@@ -194,27 +212,13 @@ The `schedule.type` field determines the shape of `schedule.details`:
 }
 ```
 
-### Example prompts
-
-- *Schedule this on my LinkedIn channel for tomorrow 9am IST: "Ship early, iterate often."*
-- *Create a draft X post with this thread: "1/3 Our API is now public..."*
-- *Publish this image post to Instagram now* (with `action: "PUBLISH"` and `schedule.type: "NOW"`)
-
-### Errors
-
-| Error | Cause |
-| --- | --- |
-| `Missing required context` | Invalid auth |
-| Validation errors | Invalid `channelId`, schedule, media, or platform fields |
-| Media errors | Unsupported URL, MIME type, or file size |
-
 More examples: [`examples/`](./examples/)
 
 ---
 
 ## `get-posts`
 
-Returns posts filtered by date range and optional criteria.
+Returns posts filtered by publish date range and optional criteria for the user's default profile.
 
 ### Annotations
 
@@ -231,16 +235,20 @@ JSON schema: [`schemas/get-posts.input.json`](./schemas/get-posts.input.json)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `from` | string | Yes | Start date (ISO 8601) |
-| `to` | string | Yes | End date (ISO 8601) |
-| `status` | string or array | No | `PROCESSING`, `FAILED`, `SCHEDULED`, `QUEUED`, `PUBLISHED`, `NEEDS_APPROVAL` |
-| `platform` | string or array | No | `x`, `facebook`, `instagram`, `linkedin`, `youtube`, `tiktok`, `pinterest`, `google_business`, `mastodon`, `bluesky`, `threads` |
-| `channelId` | string or array | No | Filter by channel |
-| `labels` | string or array | No | Filter by label ID |
-| `campaign` | string or array | No | Filter by campaign ID |
-| `author` | string or array | No | Filter by author user ID |
-| `labelMatch` | string | No | `ALL` or `ANY` (when filtering by multiple labels) |
+| `from` | string | Yes | Start date — ISO 8601 datetime or `YYYY-MM-DD` |
+| `to` | string | Yes | End date — ISO 8601 datetime or `YYYY-MM-DD` |
+| `status` | string or array | No | See status values below |
+| `platform` | string or array | No | See platform values below |
+| `channelId` | string (UUID) or array | No | Filter by `channelId` from `list-channels` |
+| `labels` | string (UUID) or array | No | Filter by label ID |
+| `campaign` | string (UUID) or array | No | Filter by campaign ID |
+| `author` | string (UUID) or array | No | Filter by author user ID |
+| `labelMatch` | string | No | `ALL` or `ANY` (multi-label filter) |
 | `view` | string | No | `list` (default), `day`, `week`, `month` |
+
+**Status values:** `PROCESSING`, `FAILED`, `SCHEDULED`, `QUEUED`, `PUBLISHED`, `NEEDS_APPROVAL`
+
+**Platform values:** `x`, `facebook`, `instagram`, `linkedin`, `youtube`, `tiktok`, `pinterest`, `google_business`, `mastodon`, `bluesky`, `threads`
 
 ### Response
 
@@ -260,42 +268,29 @@ JSON schema: [`schemas/get-posts.input.json`](./schemas/get-posts.input.json)
 
 ```json
 {
-  "from": "2026-07-01T00:00:00.000Z",
-  "to": "2026-07-31T23:59:59.999Z",
+  "from": "2026-07-01",
+  "to": "2026-07-31",
   "status": "SCHEDULED",
   "platform": "linkedin",
   "view": "list"
 }
 ```
 
-### Example prompts
-
-- *Show all my scheduled Verlynk posts for this week*
-- *List failed posts from the last 7 days*
-- *What Instagram posts are queued in Verlynk?*
-
-### Errors
-
-| Error | Cause |
-| --- | --- |
-| `Missing required context` | Invalid auth |
-| Empty results | No posts match filters (not an error) |
-
 ---
 
 ## Discovery workflow
 
-Recommended order for agents:
-
-1. **`list-channels`** → get `channelId` and `platform`
+1. **`list-channels`** → `channels[].channelId` + `channels[].platformName`
 2. **Upload media** (if needed) → [MEDIA.md](./MEDIA.md)
-3. **`create-posts`** → use platform fields from [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md)
+3. **`create-posts`** → platform fields from [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md)
 4. **`get-posts`** → verify scheduling
 
 ---
 
 ## Related
 
+- [AUTHENTICATION.md](./AUTHENTICATION.md)
+- [SECURITY.md](./SECURITY.md)
 - [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md)
 - [MEDIA.md](./MEDIA.md)
 - [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md)

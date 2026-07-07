@@ -62,7 +62,7 @@ Include only when `platform` is `tiktok`.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `privacy` | string | Privacy level |
+| `privacy` | string | `PUBLIC_TO_EVERYONE`, `MUTUAL_FOLLOW_FRIENDS`, `FOLLOWER_OF_CREATOR`, `SELF_ONLY` |
 | `publishAsDraft` | boolean | Save as draft on TikTok |
 | `disableComment` | boolean | Disable comments |
 | `disableDuet` | boolean | Disable duet |

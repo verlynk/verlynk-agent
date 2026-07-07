@@ -98,15 +98,15 @@ Pass the `publicUrl` from step 1 as `mediaUrl` in your MCP `create-posts` call:
 
 ## Supported content types
 
-Common types (see [OpenAPI reference](https://docs.verlynk.com) for the full list):
+Allowed MIME types (from Verlynk Public API):
 
-| Type | MIME types |
+| Category | MIME types |
 | --- | --- |
-| Images | `image/jpeg`, `image/png`, `image/gif`, `image/webp` |
-| Videos | `video/mp4`, `video/quicktime`, `video/webm` |
+| Images | `image/jpeg`, `image/jpg`, `image/png`, `image/webp`, `image/gif` |
+| Videos | `video/mp4`, `video/mpeg`, `video/quicktime`, `video/avi`, `video/x-msvideo`, `video/webm`, `video/x-m4v` |
 | Documents | `application/pdf` |
 
-Maximum file size: **5 GB**.
+Maximum file size: **5 GB**. Presigned `uploadUrl` expires after **1 hour** (3600 seconds).
 
 ## Shell script
 

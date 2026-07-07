@@ -13,7 +13,11 @@ Detailed guide: [docs.verlynk.com/getting-started/create-mcp-token](https://docs
 
 > **Note:** Only org admins can create MCP tokens.
 
-## Step 2: Connect your MCP client
+## Step 2: Set your default profile (multi-profile orgs)
+
+If your organization has more than one profile, set a **default profile** in the Verlynk app. MCP tools always operate on the default profile — they cannot target a different profile.
+
+## Step 3: Connect your MCP client
 
 Pick your client and follow the setup:
 
@@ -27,7 +31,7 @@ Pick your client and follow the setup:
 
 Config templates are in [`config/`](./config/). Replace `YOUR_MCP_KEY` with your token.
 
-## Step 3: Verify the connection
+## Step 4: Verify the connection
 
 Ask your agent:
 
@@ -37,7 +41,7 @@ List all my connected Verlynk channels
 
 The agent should call the `list-channels` MCP tool and return your social accounts.
 
-## Step 4: Create your first post
+## Step 5: Create your first post
 
 Try one of these prompts:
 
@@ -61,7 +65,7 @@ Schedule this post on my LinkedIn channel for tomorrow at 9:00 AM IST:
 Show all my Verlynk posts scheduled for the next 7 days
 ```
 
-## Step 5 (optional): Add media
+## Step 6 (optional): Add media
 
 MCP `create-posts` accepts a `mediaUrl` but does not upload files. For local images or videos:
 

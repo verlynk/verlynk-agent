@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "list-channels input",
+  "description": "Input schema for the Verlynk MCP list-channels tool. No user-facing fields. _context is auto-populated by the server — omit it.",
+  "type": "object",
+  "properties": {
+    "_context": {
+      "type": "object",
+      "description": "Auto-populated by server. Do not pass manually.",
+      "properties": {
+        "userId": { "type": "string" },
+        "orgId": { "type": "string" },
+        "projectId": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

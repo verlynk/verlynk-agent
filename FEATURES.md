@@ -16,7 +16,9 @@ This repo documents **only live, production features**. Items marked "Not availa
 
 Server: `https://verlynk.com/api/public/mcp`
 
-Auth: API key with `mcp:access` scope
+Auth: API key with `mcp:access` scope **or** OAuth JWT (ChatGPT, Cursor, Claude)
+
+Context: operates on the user's **default profile** only — see [AUTHENTICATION.md](./AUTHENTICATION.md)
 
 ---
 
@@ -82,10 +84,10 @@ Create MCP keys: [docs.verlynk.com/getting-started/create-mcp-token](https://doc
 
 ## Rate limits
 
-| Limit | Value |
-| --- | --- |
-| Per minute | 120 requests |
-| Burst | 30 requests per 10 seconds |
+| Limit | Value | errorCode |
+| --- | --- | --- |
+| Per minute | 120 requests | `MCP_RATE_LIMIT_EXCEEDED` |
+| Burst (10 s) | 30 requests | `MCP_BURST_LIMIT_EXCEEDED` |
 
 Details: [docs.verlynk.com/reference/rate-limits](https://docs.verlynk.com/reference/rate-limits)
 

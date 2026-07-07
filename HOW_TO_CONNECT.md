@@ -174,10 +174,18 @@ Some clients (ChatGPT, Cursor, Claude) support OAuth against Verlynk instead of 
 
 MCP requests are rate-limited per workspace:
 
-- **120 requests per minute**
-- **Burst:** 30 requests per 10 seconds
+| Limit | Value | errorCode |
+| --- | --- | --- |
+| Per minute | 120 requests | `MCP_RATE_LIMIT_EXCEEDED` |
+| Burst (10 s) | 30 requests | `MCP_BURST_LIMIT_EXCEEDED` |
 
-See [Rate Limits](https://docs.verlynk.com/reference/rate-limits) for details.
+See [Rate Limits](https://docs.verlynk.com/reference/rate-limits) and [AUTHENTICATION.md](./AUTHENTICATION.md).
+
+---
+
+## Default profile requirement
+
+MCP tools use your account's **default organization and default profile**. If you have multiple profiles, set a default in the Verlynk app before using MCP.
 
 ---
 
@@ -185,17 +193,20 @@ See [Rate Limits](https://docs.verlynk.com/reference/rate-limits) for details.
 
 | Problem | Solution |
 | --- | --- |
-| `401 Unauthorized` | Check your MCP key is valid and has `mcp:access` scope |
-| `403 API_KEY_SCOPE_DENIED` | Recreate the key with `mcp:access` scope |
-| `429 Too Many Requests` | Back off and retry; see rate limits above |
-| Tools not appearing | Restart the client after saving MCP config |
-| `mcp-remote` fails | Ensure Node.js 18+ is installed and on PATH |
-| Wrong default profile | MCP uses your account's default org/project; multi-profile orgs may need the web app to set defaults |
+| `401 Unauthorized` | Check MCP key is valid and has `mcp:access` scope |
+| `403 API_KEY_SCOPE_DENIED` | Recreate key with `mcp:access` scope |
+| `429 MCP_RATE_LIMIT_EXCEEDED` | Wait 60 seconds and retry |
+| `429 MCP_BURST_LIMIT_EXCEEDED` | Slow down; wait 10 seconds |
+| Tools not appearing | Restart client after saving MCP config |
+| `mcp-remote` fails | Ensure Node.js 18+ is on PATH |
+| `Missing required context` | Set default profile in Verlynk app |
+| `API key org does not match user default organization` | Use a key from your default org or change default org |
 
 ---
 
 ## Related
 
+- [AUTHENTICATION.md](./AUTHENTICATION.md)
 - [QUICK_START.md](./QUICK_START.md)
 - [MCP_TOOLS.md](./MCP_TOOLS.md)
 - [docs.verlynk.com/integrations](https://docs.verlynk.com/integrations/claude)

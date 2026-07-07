@@ -21,7 +21,7 @@ List all my connected Verlynk channels
 
 **MCP tool:** `list-channels` with `{}`
 
-**Use the response:** `structuredContent.channels[].id` → `channelId`, `.platform` → platform name.
+**Use the response:** `structuredContent.channels[].channelId` → `channelId`, `.platformName` → platform.
 
 ### 2. List scheduled posts
 
@@ -35,8 +35,8 @@ Show all my Verlynk posts scheduled between July 1 and July 31, 2026
 
 ```json
 {
-  "from": "2026-07-01T00:00:00.000Z",
-  "to": "2026-07-31T23:59:59.999Z",
+  "from": "2026-07-01",
+  "to": "2026-07-31",
   "status": "SCHEDULED",
   "view": "list"
 }
@@ -223,8 +223,8 @@ Show all failed Instagram posts from the last 7 days in Verlynk
 
 ```json
 {
-  "from": "2026-07-01T00:00:00.000Z",
-  "to": "2026-07-08T00:00:00.000Z",
+  "from": "2026-07-01",
+  "to": "2026-07-08",
   "status": "FAILED",
   "platform": "instagram",
   "view": "list"

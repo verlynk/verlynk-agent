@@ -7,13 +7,11 @@
   "properties": {
     "from": {
       "type": "string",
-      "format": "date-time",
-      "description": "ISO 8601 start date"
+      "description": "Start date — ISO 8601 datetime (e.g. 2026-07-01T00:00:00.000Z) or YYYY-MM-DD"
     },
     "to": {
       "type": "string",
-      "format": "date-time",
-      "description": "ISO 8601 end date"
+      "description": "End date — ISO 8601 datetime or YYYY-MM-DD"
     },
     "status": {
       "oneOf": [

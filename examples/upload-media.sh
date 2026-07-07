@@ -5,6 +5,7 @@
 # Requires:
 #   VERLYNK_API_KEY — Public API key with posts:write scope
 #   VERLYNK_API_URL — optional, defaults to https://verlynk.com/api
+#   jq, curl
 
 set -euo pipefail
 
@@ -19,6 +20,11 @@ if [[ ! -f "$FILE_PATH" ]]; then
   exit 1
 fi
 
+if ! command -v jq >/dev/null 2>&1; then
+  echo "Error: jq is required" >&2
+  exit 1
+fi
+
 FILENAME="$(basename "$FILE_PATH")"
 FILE_SIZE="$(wc -c < "$FILE_PATH" | tr -d ' ')"
 
@@ -28,11 +34,15 @@ case "${FILENAME##*.}" in
   gif)      CONTENT_TYPE="image/gif" ;;
   webp)     CONTENT_TYPE="image/webp" ;;
   mp4)      CONTENT_TYPE="video/mp4" ;;
+  mpeg|mpg) CONTENT_TYPE="video/mpeg" ;;
   mov)      CONTENT_TYPE="video/quicktime" ;;
+  avi)      CONTENT_TYPE="video/avi" ;;
   webm)     CONTENT_TYPE="video/webm" ;;
+  m4v)      CONTENT_TYPE="video/x-m4v" ;;
   pdf)      CONTENT_TYPE="application/pdf" ;;
   *)
     echo "Error: unsupported file extension: ${FILENAME##*.}" >&2
+    echo "See MEDIA.md for allowed MIME types." >&2
     exit 1
     ;;
 esac
@@ -44,7 +54,7 @@ fi
 
 echo "Requesting presigned URL for $FILENAME ($CONTENT_TYPE, ${FILE_SIZE} bytes)..." >&2
 
-PRESIGN_RESPONSE="$(curl -s -X POST "${API_URL}/v1/media/presign${QUERY}" \
+PRESIGN_RESPONSE="$(curl -sf -X POST "${API_URL}/v1/media/presign${QUERY}" \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json" \
   -d "{\"filename\":\"${FILENAME}\",\"contentType\":\"${CONTENT_TYPE}\",\"size\":${FILE_SIZE}}")"
@@ -59,9 +69,14 @@ if [[ -z "$UPLOAD_URL" || "$UPLOAD_URL" == "null" ]]; then
 fi
 
 echo "Uploading to presigned URL..." >&2
-curl -s -X PUT "$UPLOAD_URL" \
+HTTP_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -X PUT "$UPLOAD_URL" \
   -H "Content-Type: ${CONTENT_TYPE}" \
-  --data-binary @"$FILE_PATH"
+  --data-binary @"$FILE_PATH")"
+
+if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
+  echo "Error: upload failed with HTTP $HTTP_STATUS" >&2
+  exit 1
+fi
 
 echo "Upload complete." >&2
 echo "$PRESIGN_RESPONSE" | jq '{publicUrl, key, type}'
