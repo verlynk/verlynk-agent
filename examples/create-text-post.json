@@ -1,0 +1,25 @@
+{
+  "action": "DRAFT",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "We're excited to share our latest product update. Read more on our blog.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "DRAFT",
+        "details": {
+          "timezone": "UTC",
+          "utc": "2026-07-08T12:00:00.000Z"
+        }
+      }
+    }
+  ]
+}

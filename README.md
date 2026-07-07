@@ -1,0 +1,97 @@
+# Verlynk Agent
+
+Agent documentation and skills for the **Verlynk MCP server** — connect Claude, Cursor, ChatGPT, or any MCP client to schedule and manage social media posts.
+
+This repo is **docs-only**. There is no npm CLI. Verlynk hosts the MCP server; you connect to it from your agent client.
+
+## Quick links
+
+| Resource | URL |
+| --- | --- |
+| MCP server | `https://verlynk.com/api/public/mcp` |
+| Developer docs | [docs.verlynk.com](https://docs.verlynk.com) |
+| Create MCP token | [Create MCP Token guide](https://docs.verlynk.com/getting-started/create-mcp-token) |
+| Public API (media upload) | [OpenAPI reference](https://docs.verlynk.com) |
+
+## Install as a skill
+
+```bash
+npx skills add verlynk/verlynk-agent
+```
+
+## Prerequisites
+
+1. A [Verlynk](https://verlynk.com) account with connected social channels
+2. An API key with the **`mcp:access`** scope (org admin creates it in **Settings → Developer → Verlynk MCP**)
+3. Node.js 18+ (only needed for `mcp-remote` proxy in Claude Desktop / Cursor)
+
+## What's available today
+
+| MCP tool | Description |
+| --- | --- |
+| `list-channels` | List connected social accounts |
+| `create-posts` | Create, schedule, publish, or draft posts |
+| `get-posts` | List and filter posts by date, status, platform, etc. |
+
+See [FEATURES.md](./FEATURES.md) for the full scope boundary.
+
+## 5-minute start
+
+1. **Create an MCP token** — follow the [Create MCP Token guide](https://docs.verlynk.com/getting-started/create-mcp-token)
+2. **Connect your client** — see [HOW_TO_CONNECT.md](./HOW_TO_CONNECT.md) or copy a template from [`config/`](./config/)
+3. **Try a prompt:**
+   - *List all my connected Verlynk channels*
+   - *Show my scheduled posts for this week*
+   - *Draft a LinkedIn post: We just shipped our analytics dashboard*
+
+Full walkthrough: [QUICK_START.md](./QUICK_START.md)
+
+## Documentation
+
+| File | Purpose |
+| --- | --- |
+| [QUICK_START.md](./QUICK_START.md) | First connection and first post |
+| [HOW_TO_CONNECT.md](./HOW_TO_CONNECT.md) | Setup for Claude, Cursor, ChatGPT, other MCP clients |
+| [MCP_TOOLS.md](./MCP_TOOLS.md) | Full reference for all 3 MCP tools |
+| [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md) | Platform-specific post fields |
+| [MEDIA.md](./MEDIA.md) | Upload media via Public API presign (curl) |
+| [FEATURES.md](./FEATURES.md) | What's live vs not available |
+| [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md) | Agent skill reference |
+| [examples/EXAMPLES.md](./examples/EXAMPLES.md) | Workflow examples and JSON payloads |
+
+## Supported platforms
+
+Facebook, Instagram, LinkedIn, X (Twitter), YouTube, TikTok, Pinterest, Google Business, Mastodon, Bluesky, Threads.
+
+Platform-specific fields for `create-posts` are documented in [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md).
+
+## MCP vs Public API
+
+| Use case | Path |
+| --- | --- |
+| List channels, create posts, list posts | **MCP tools** (this repo) |
+| Upload media files | **Public API** `POST /v1/media/presign` — see [MEDIA.md](./MEDIA.md) |
+| Analytics, connect accounts, full CRUD | **Public API v1** — [docs.verlynk.com](https://docs.verlynk.com) |
+
+MCP keys use the `mcp:access` scope. Media upload requires a separate Public API key with `posts:write`.
+
+## Repository structure
+
+```
+verlynk-agent/
+├── README.md
+├── QUICK_START.md
+├── HOW_TO_CONNECT.md
+├── MCP_TOOLS.md
+├── PROVIDER_SETTINGS.md
+├── MEDIA.md
+├── FEATURES.md
+├── skills/verlynk/SKILL.md
+├── config/           # MCP client config templates
+├── schemas/          # JSON schemas for tool inputs
+└── examples/         # Example payloads and scripts
+```
+
+## License
+
+MIT — see [LICENSE](./LICENSE).

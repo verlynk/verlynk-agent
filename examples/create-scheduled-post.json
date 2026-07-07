@@ -1,0 +1,25 @@
+{
+  "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Monday motivation — ship early, iterate often.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "ONCE",
+        "details": {
+          "timezone": "Asia/Kolkata",
+          "utc": "2026-07-08T03:30:00.000Z"
+        }
+      }
+    }
+  ]
+}

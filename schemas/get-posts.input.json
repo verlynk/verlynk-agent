@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "get-posts input",
+  "description": "Input schema for the Verlynk MCP get-posts tool. _context is auto-populated by the server — omit it.",
+  "type": "object",
+  "required": ["from", "to"],
+  "properties": {
+    "from": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 start date"
+    },
+    "to": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 end date"
+    },
+    "status": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "PROCESSING",
+            "FAILED",
+            "SCHEDULED",
+            "QUEUED",
+            "PUBLISHED",
+            "NEEDS_APPROVAL"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "PROCESSING",
+              "FAILED",
+              "SCHEDULED",
+              "QUEUED",
+              "PUBLISHED",
+              "NEEDS_APPROVAL"
+            ]
+          }
+        }
+      ]
+    },
+    "platform": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "x",
+            "facebook",
+            "instagram",
+            "linkedin",
+            "youtube",
+            "tiktok",
+            "pinterest",
+            "google_business",
+            "mastodon",
+            "bluesky",
+            "threads"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "x",
+              "facebook",
+              "instagram",
+              "linkedin",
+              "youtube",
+              "tiktok",
+              "pinterest",
+              "google_business",
+              "mastodon",
+              "bluesky",
+              "threads"
+            ]
+          }
+        }
+      ]
+    },
+    "channelId": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "labels": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "campaign": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "author": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "labelMatch": {
+      "type": "string",
+      "enum": ["ALL", "ANY"]
+    },
+    "view": {
+      "type": "string",
+      "enum": ["day", "week", "month", "list"],
+      "default": "list"
+    },
+    "_context": {
+      "type": "object",
+      "description": "Auto-populated by server. Do not pass manually.",
+      "properties": {
+        "userId": { "type": "string" },
+        "orgId": { "type": "string" },
+        "projectId": { "type": "string" }
+      }
+    }
+  }
+}

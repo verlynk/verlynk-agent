@@ -1,0 +1,46 @@
+{
+  "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_LINKEDIN_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Excited to announce our Q3 roadmap. Key highlights inside.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "ONCE",
+        "details": {
+          "timezone": "UTC",
+          "utc": "2026-07-08T14:00:00.000Z"
+        }
+      }
+    },
+    {
+      "channelId": "YOUR_X_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Q3 roadmap is live! 🚀",
+            "media": []
+          }
+        ],
+        "replySettings": "everyone"
+      },
+      "schedule": {
+        "type": "ONCE",
+        "details": {
+          "timezone": "UTC",
+          "utc": "2026-07-08T14:00:00.000Z"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_TIKTOK_CHANNEL_ID",
+      "postType": "video",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Behind the scenes at our office #startup #tech",
+            "media": [
+              {
+                "mediaUrl": "https://cdn.verlynk.com/temp/.../behind-scenes.mp4",
+                "mimeType": "video/mp4"
+              }
+            ]
+          }
+        ],
+        "privacy": "PUBLIC_TO_EVERYONE",
+        "disableComment": false,
+        "disableDuet": false,
+        "disableStitch": false
+      },
+      "schedule": {
+        "type": "ONCE",
+        "details": {
+          "timezone": "UTC",
+          "utc": "2026-07-09T20:00:00.000Z"
+        }
+      }
+    }
+  ]
+}

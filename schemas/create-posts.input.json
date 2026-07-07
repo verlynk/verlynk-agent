@@ -1,0 +1,237 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "create-posts input",
+  "description": "Input schema for the Verlynk MCP create-posts tool. _context is auto-populated by the server — omit it.",
+  "type": "object",
+  "required": ["action", "posts"],
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["DRAFT", "SCHEDULE", "PUBLISH", "QUEUE", "NEEDS_APPROVAL"],
+      "description": "Post action type"
+    },
+    "posts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/post" }
+    },
+    "_context": {
+      "type": "object",
+      "description": "Auto-populated by server. Do not pass manually.",
+      "properties": {
+        "userId": { "type": "string" },
+        "orgId": { "type": "string" },
+        "projectId": { "type": "string" }
+      }
+    }
+  },
+  "definitions": {
+    "media": {
+      "type": "object",
+      "required": ["mediaUrl", "mimeType"],
+      "properties": {
+        "mediaUrl": { "type": "string", "format": "uri" },
+        "mimeType": { "type": "string" }
+      }
+    },
+    "content": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "default": "" },
+        "text": { "type": "string", "default": "" },
+        "media": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/media" },
+          "default": []
+        }
+      }
+    },
+    "additionProps": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    },
+    "metaData": {
+      "type": "object",
+      "required": ["contents"],
+      "properties": {
+        "contents": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/content" }
+        },
+        "firstComment": {
+          "type": "string",
+          "description": "Not available for mastodon, bluesky, threads, pinterest"
+        },
+        "link": { "type": "string" },
+        "category": { "$ref": "#/definitions/additionProps", "description": "YouTube only" },
+        "privacy": { "type": "string", "description": "YouTube/TikTok only" },
+        "license": { "type": "string", "description": "YouTube only" },
+        "embedding": { "type": "boolean", "description": "YouTube only" },
+        "notifySubscribers": { "type": "boolean", "description": "YouTube only" },
+        "paidPromotions": { "type": "boolean", "description": "YouTube only" },
+        "playlist": { "$ref": "#/definitions/additionProps", "description": "YouTube only" },
+        "madeForKids": { "type": "boolean", "description": "YouTube only" },
+        "tags": { "type": "array", "items": { "type": "string" }, "description": "YouTube only" },
+        "enableDirectMessaging": { "type": "boolean", "description": "X/Twitter only" },
+        "replySettings": {
+          "type": "string",
+          "enum": ["everyone", "following", "mentionedUsers", "subscribers"],
+          "description": "X/Twitter only"
+        },
+        "publishAsDraft": { "type": "boolean", "description": "TikTok only" },
+        "disableComment": { "type": "boolean", "description": "TikTok only" },
+        "disableDuet": { "type": "boolean", "description": "TikTok only" },
+        "disableStitch": { "type": "boolean", "description": "TikTok only" },
+        "videoCoverTimestampMs": { "type": "number", "description": "TikTok only" },
+        "isAigc": { "type": "boolean", "description": "TikTok only" },
+        "autoAddMusic": { "type": "boolean", "description": "TikTok only" },
+        "brandOrganicToggle": { "type": "boolean", "description": "TikTok only" },
+        "brandContentToggle": { "type": "boolean", "description": "TikTok only" },
+        "board": { "$ref": "#/definitions/additionProps", "description": "Pinterest only" },
+        "dominantColor": { "type": "string", "description": "Pinterest only" },
+        "altText": { "type": "string", "description": "Pinterest only" },
+        "boardSectionId": { "type": "string", "description": "Pinterest only" },
+        "privateNote": { "type": "string", "description": "Pinterest only" },
+        "isSensitive": { "type": "boolean", "description": "Mastodon only" },
+        "spoilerText": { "type": "string", "maxLength": 500, "description": "Mastodon only" },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "unlisted", "private", "direct"],
+          "description": "Mastodon only"
+        }
+      }
+    },
+    "post": {
+      "type": "object",
+      "required": ["channelId", "postType", "metaData", "schedule"],
+      "properties": {
+        "channelId": {
+          "type": "string",
+          "description": "From list-channels → channels[].id"
+        },
+        "postType": {
+          "type": "string",
+          "enum": ["post", "reel", "story", "video", "thread", "pin", "offer", "event"]
+        },
+        "metaData": { "$ref": "#/definitions/metaData" },
+        "schedule": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["type", "details"],
+              "properties": {
+                "type": { "const": "NOW" },
+                "details": {
+                  "type": "object",
+                  "required": ["timezone"],
+                  "properties": { "timezone": { "type": "string" } }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "details"],
+              "properties": {
+                "type": { "const": "ONCE" },
+                "details": {
+                  "type": "object",
+                  "required": ["timezone", "utc"],
+                  "properties": {
+                    "timezone": { "type": "string" },
+                    "utc": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "details"],
+              "properties": {
+                "type": { "const": "DRAFT" },
+                "details": {
+                  "type": "object",
+                  "required": ["timezone", "utc"],
+                  "properties": {
+                    "timezone": { "type": "string" },
+                    "utc": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "details"],
+              "properties": {
+                "type": { "const": "QUEUE" },
+                "details": {
+                  "type": "object",
+                  "required": ["queueType", "timezone"],
+                  "properties": {
+                    "queueType": { "type": "string", "enum": ["NEXT", "LAST"] },
+                    "timezone": { "type": "string" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "details"],
+              "properties": {
+                "type": { "const": "RECURRING_WEEKLY" },
+                "details": {
+                  "type": "object",
+                  "required": ["daysOfWeek", "timezone", "utcStartDate", "utcEndDate"],
+                  "properties": {
+                    "daysOfWeek": { "type": "string" },
+                    "timezone": { "type": "string" },
+                    "utcStartDate": { "type": "string", "format": "date-time" },
+                    "utcEndDate": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "details"],
+              "properties": {
+                "type": { "const": "RECURRING_MONTHLY" },
+                "details": {
+                  "type": "object",
+                  "required": ["dayOfMonth", "timezone", "utcStartDate", "utcEndDate"],
+                  "properties": {
+                    "dayOfMonth": { "type": "integer", "minimum": 1, "maximum": 31 },
+                    "timezone": { "type": "string" },
+                    "utcStartDate": { "type": "string", "format": "date-time" },
+                    "utcEndDate": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "details"],
+              "properties": {
+                "type": { "const": "RECURRING_CUSTOM" },
+                "details": {
+                  "type": "object",
+                  "required": ["timezone", "utc"],
+                  "properties": {
+                    "timezone": { "type": "string" },
+                    "utc": {
+                      "type": "array",
+                      "items": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

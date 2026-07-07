@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "Verlynk": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://verlynk.com/api/public/mcp",
+        "--header",
+        "Authorization: Bearer YOUR_MCP_KEY"
+      ]
+    }
+  }
+}
