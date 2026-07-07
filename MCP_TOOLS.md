@@ -31,7 +31,7 @@ See [AUTHENTICATION.md#workspace-context-default-profile](./AUTHENTICATION.md#wo
 
 ## `list-channels`
 
-Returns social accounts the authenticated user can publish to in their **default profile**. Only **connected** channels are included.
+Returns social accounts the authenticated user can publish to in their **default profile**. Only **connected** channels where the user has a channel role are included.
 
 ### Annotations
 
@@ -105,6 +105,20 @@ Filter by platform in the agent: `channels.filter(c => c.platformName === 'linke
 Creates posts as draft, scheduled, published, queued, or pending approval.
 
 **Always call `list-channels` first** to get valid `channelId` values.
+
+The authenticated user must have **Create** and **Publish** (or **Needs approval**) permissions on the target channel.
+
+### Action and schedule pairing
+
+| `action` | `schedule.type` | Outcome |
+| --- | --- | --- |
+| `DRAFT` | `DRAFT` | Saved to draft store — **not** in `get-posts` |
+| `PUBLISH` | `NOW` | Published immediately |
+| `SCHEDULE` | `ONCE` / `RECURRING_*` | Scheduled post — visible in `get-posts` |
+| `QUEUE` | `QUEUE` | Added to queue |
+| `NEEDS_APPROVAL` | Per workflow | Submitted for approval workflow |
+
+See [PROVIDER_SETTINGS.md#action-and-schedule-pairing](./PROVIDER_SETTINGS.md#action-and-schedule-pairing) and [OPERATIONS.md](./OPERATIONS.md).
 
 ### Annotations
 
@@ -218,7 +232,7 @@ More examples: [`examples/`](./examples/)
 
 ## `get-posts`
 
-Returns posts filtered by publish date range and optional criteria for the user's default profile.
+Returns posts from the **post table** filtered by **`publishAt`** date range and optional criteria. Does **not** include drafts created with `action: "DRAFT"` — verify drafts in the Verlynk dashboard.
 
 ### Annotations
 
@@ -235,8 +249,8 @@ JSON schema: [`schemas/get-posts.input.json`](./schemas/get-posts.input.json)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `from` | string | Yes | Start date — ISO 8601 datetime or `YYYY-MM-DD` |
-| `to` | string | Yes | End date — ISO 8601 datetime or `YYYY-MM-DD` |
+| `from` | string | Yes | Start of `publishAt` range — ISO 8601 or `YYYY-MM-DD` |
+| `to` | string | Yes | End of `publishAt` range — ISO 8601 or `YYYY-MM-DD` |
 | `status` | string or array | No | See status values below |
 | `platform` | string or array | No | See platform values below |
 | `channelId` | string (UUID) or array | No | Filter by `channelId` from `list-channels` |
@@ -283,7 +297,13 @@ JSON schema: [`schemas/get-posts.input.json`](./schemas/get-posts.input.json)
 1. **`list-channels`** → `channels[].channelId` + `channels[].platformName`
 2. **Upload media** (if needed) → [MEDIA.md](./MEDIA.md)
 3. **`create-posts`** → platform fields from [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md)
-4. **`get-posts`** → verify scheduling
+4. **`get-posts`** → verify scheduling (not for drafts)
+
+---
+
+## Production operations
+
+Rate limits, retry policy, idempotency, plan limits, and permissions: [OPERATIONS.md](./OPERATIONS.md)
 
 ---
 

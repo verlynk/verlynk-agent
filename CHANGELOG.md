@@ -2,6 +2,26 @@
 
 All notable changes to this documentation repo are listed here.
 
+## [1.2.0] - 2026-07-07
+
+### Added
+
+- [OPERATIONS.md](./OPERATIONS.md) — production ops: retry, idempotency, plan limits, permissions
+- [SUPPORT.md](./SUPPORT.md) — support channels and escalation guidance
+- [CONTRIBUTING.md](./CONTRIBUTING.md) — documentation maintenance guide
+- [config/README.md](./config/README.md) — config template usage
+
+### Fixed
+
+- Documented that `action: "DRAFT"` posts are **not** returned by `get-posts`
+- Documented `get-posts` filters on `publishAt` (not `createdAt`)
+- Documented channel permission requirements (Create + Publish)
+- Documented free vs paid plan schedule type limits
+- Fixed remaining `platform` → `platformName` references in PROVIDER_SETTINGS.md
+- Added action/schedule pairing matrix
+- Documented no server-side idempotency on `create-posts`
+- Media presign billing plan requirement
+
 ## [1.1.0] - 2026-07-07
 
 ### Fixed

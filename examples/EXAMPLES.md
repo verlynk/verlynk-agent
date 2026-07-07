@@ -53,6 +53,8 @@ Create a draft LinkedIn post in Verlynk:
 
 **MCP tool:** `create-posts` — see [`create-text-post.json`](./create-text-post.json)
 
+> **Note:** Drafts are saved but **not returned** by `get-posts`. Verify drafts in the Verlynk dashboard.
+
 ---
 
 ## Scheduled post

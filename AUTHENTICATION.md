@@ -98,6 +98,17 @@ To work with a non-default profile, use the [Public API v1](https://docs.verlynk
 
 ---
 
+## Channel permissions
+
+Creating posts requires the authenticated user to have:
+
+- **Create** permission on the target channel
+- **Publish** or **Needs approval** permission on the target channel
+
+`list-channels` and `get-posts` only return channels the user has a role on. Permission errors surface as validation failures on `create-posts` (e.g. `post.UserDoesNotHavePostPermission`).
+
+---
+
 ## Public API key (media upload only)
 
 Media presign (`POST /v1/media/presign`) requires a **separate** Public API key with `posts:write` — not the MCP key.
@@ -142,6 +153,8 @@ Tool-level errors (e.g. `Missing required context`, validation failures) are ret
 
 ## Related
 
-- [HOW_TO_CONNECT.md](./HOW_TO_CONNECT.md)
+- [AUTHENTICATION.md](./AUTHENTICATION.md)
 - [SECURITY.md](./SECURITY.md)
+- [OPERATIONS.md](./OPERATIONS.md)
+- [SUPPORT.md](./SUPPORT.md)
 - [MCP_TOOLS.md](./MCP_TOOLS.md)

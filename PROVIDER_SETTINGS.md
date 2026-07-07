@@ -4,7 +4,7 @@ Platform-specific fields for the `create-posts` MCP tool.
 
 These fields go inside `metaData` on each post object. **Only include fields relevant to the target platform** — omit unrelated fields to avoid validation errors.
 
-General rule: call `list-channels` first, check `channels[].platform`, then include only the matching section below.
+General rule: call `list-channels` first, check `channels[].platformName`, then include only the matching section below.
 
 ---
 
@@ -34,7 +34,7 @@ General rule: call `list-channels` first, check `channels[].platform`, then incl
 
 ## YouTube
 
-Include only when `platform` is `youtube`.
+Include only when `platformName` is `youtube`.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -58,7 +58,7 @@ Example: [`examples/create-youtube-post.json`](./examples/create-youtube-post.js
 
 ## TikTok
 
-Include only when `platform` is `tiktok`.
+Include only when `platformName` is `tiktok`.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -83,7 +83,7 @@ Example: [`examples/create-tiktok-post.json`](./examples/create-tiktok-post.json
 
 ## X (Twitter)
 
-Include only when `platform` is `x`.
+Include only when `platformName` is `x`.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -98,7 +98,7 @@ For threads, use multiple content blocks or multiple posts in the `posts` array.
 
 ## Pinterest
 
-Include only when `platform` is `pinterest`.
+Include only when `platformName` is `pinterest`.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -116,7 +116,7 @@ Include only when `platform` is `pinterest`.
 
 ## Mastodon
 
-Include only when `platform` is `mastodon`.
+Include only when `platformName` is `mastodon`.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -132,7 +132,7 @@ Include only when `platform` is `mastodon`.
 
 These platforms use `metaData.contents` (text, title, media) without additional MCP-specific fields:
 
-| Platform | `platform` value | Common `postType` |
+| Platform | `platformName` | Common `postType` |
 | --- | --- | --- |
 | Facebook | `facebook` | `post`, `reel`, `story` |
 | Instagram | `instagram` | `post`, `reel`, `story` |
@@ -164,11 +164,23 @@ These platforms use `metaData.contents` (text, title, media) without additional 
 
 | Value | Behavior |
 | --- | --- |
-| `DRAFT` | Save as draft |
+| `DRAFT` | Save as draft (stored separately — **not** returned by `get-posts`) |
 | `SCHEDULE` | Schedule for future publish |
 | `PUBLISH` | Publish immediately (use `schedule.type: "NOW"`) |
-| `QUEUE` | Add to publishing queue |
+| `QUEUE` | Add to publishing queue (`schedule.type: "QUEUE"`) |
 | `NEEDS_APPROVAL` | Submit for workflow approval |
+
+## Action and schedule pairing
+
+| `action` | Required `schedule.type` | Notes |
+| --- | --- | --- |
+| `DRAFT` | `DRAFT` | Draft `utc` must be future, within 12 months |
+| `PUBLISH` | `NOW` | Immediate publish |
+| `SCHEDULE` | `ONCE`, `RECURRING_*` | `ONCE` requires future `utc` |
+| `QUEUE` | `QUEUE` | `queueType`: `NEXT` or `LAST` |
+| `NEEDS_APPROVAL` | Per workflow | Requires workflow configuration on channel |
+
+Free plans support only `NOW`, `ONCE`, and `DRAFT` schedule types. See [OPERATIONS.md](./OPERATIONS.md).
 
 ---
 

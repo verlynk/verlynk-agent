@@ -61,8 +61,12 @@ Full walkthrough: [QUICK_START.md](./QUICK_START.md)
 | [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md) | Platform-specific post fields |
 | [MEDIA.md](./MEDIA.md) | Upload media via Public API presign (curl) |
 | [FEATURES.md](./FEATURES.md) | What's live vs not available |
+| [OPERATIONS.md](./OPERATIONS.md) | Rate limits, retry, plan limits, production checklist |
+| [SUPPORT.md](./SUPPORT.md) | Contact and escalation |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | How to update this documentation |
 | [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md) | Agent skill reference |
 | [examples/EXAMPLES.md](./examples/EXAMPLES.md) | Workflow examples and JSON payloads |
+| [CHANGELOG.md](./CHANGELOG.md) | Version history |
 
 ## Supported platforms
 
@@ -90,12 +94,19 @@ verlynk-agent/
 ├── README.md
 ├── AUTHENTICATION.md
 ├── SECURITY.md
+├── OPERATIONS.md
+├── SUPPORT.md
+├── CONTRIBUTING.md
 ├── MCP_TOOLS.md
 ├── skills/verlynk/SKILL.md
 ├── config/              # MCP client config templates
 ├── schemas/             # JSON schemas for tool inputs
 └── examples/            # Example payloads and scripts
 ```
+
+## Support
+
+Questions or issues: [SUPPORT.md](./SUPPORT.md) · [contact@verlynk.com](mailto:contact@verlynk.com)
 
 ## License
 

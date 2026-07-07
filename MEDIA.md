@@ -19,7 +19,9 @@ Media presign requires a **Public API key** with the `posts:write` scope — not
 
 Create keys in **Settings → Developer** or via `POST /v1/api-keys`.
 
-If your organization has multiple profiles, you may need `profileId` as a query parameter. List profiles with `GET /v1/profiles`.
+**Billing:** Presign requires an organization with a valid billing plan. Requests from orgs without an active plan return `400`.
+
+If your organization has multiple profiles, pass `profileId` as a query parameter. List profiles with `GET /v1/profiles`.
 
 ## Upload workflow
 
@@ -127,7 +129,8 @@ For TikTok, Instagram, and YouTube, prefer presigned Verlynk URLs for reliabilit
 | --- | --- | --- |
 | 401 | `UNAUTHORIZED` | Invalid API key |
 | 403 | `API_KEY_SCOPE_DENIED` | Key lacks `posts:write` |
-| 400 | `BAD_REQUEST` | Missing filename/contentType or unsupported MIME type |
+| 400 | `BAD_REQUEST` | Missing filename/contentType, unsupported MIME type, or invalid billing plan |
+| 404 | `PROFILE_NOT_FOUND` | Invalid `profileId` query parameter |
 | 429 | — | Rate limit exceeded |
 
 ## Related

@@ -61,6 +61,13 @@ The `create-posts` tool publishes content to **real social media accounts**. Age
 
 State-changing operations in Verlynk are audit-logged server-side. Use the Verlynk dashboard to review post history and connected accounts.
 
+### Data handling
+
+- MCP requests are authenticated and scoped to the user's organization
+- Post content and media URLs are processed server-side and stored per Verlynk's data policies
+- Do not send credentials, PII, or secrets in post text unless intended for publication
+- Media uploaded via presign is stored in Verlynk cloud storage (`temp/` prefix until referenced in a post)
+
 ### Transport
 
 - All production traffic uses **HTTPS** (`https://verlynk.com`)
@@ -91,3 +98,4 @@ Report security vulnerabilities to [contact@verlynk.com](mailto:contact@verlynk.
 
 - [AUTHENTICATION.md](./AUTHENTICATION.md)
 - [HOW_TO_CONNECT.md](./HOW_TO_CONNECT.md)
+- [OPERATIONS.md](./OPERATIONS.md)

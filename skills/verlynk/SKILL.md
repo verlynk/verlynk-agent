@@ -73,6 +73,8 @@ Only include platform-specific `metaData` for the target `platformName`. See [PR
 
 ### 5. Verify with get-posts
 
+For **scheduled, published, or queued** posts only (not drafts):
+
 ```json
 {
   "from": "2026-07-01",
@@ -81,6 +83,8 @@ Only include platform-specific `metaData` for the target `platformName`. See [PR
   "view": "list"
 }
 ```
+
+> **Drafts:** `action: "DRAFT"` is not returned by `get-posts`. Confirm drafts in the Verlynk dashboard.
 
 ## Tool quick reference
 
@@ -122,6 +126,9 @@ Only include platform-specific `metaData` for the target `platformName`. See [PR
 | `MCP_RATE_LIMIT_EXCEEDED` | Back off 60 s |
 | `MCP_BURST_LIMIT_EXCEEDED` | Slow down; retry after 10 s |
 | `Missing required context` | Set default profile in Verlynk app |
+| `post.ScheduleFeature` | Free plan — use `NOW`/`ONCE`/`DRAFT` only |
+| `post.UserDoesNotHavePostPermission` | User lacks Create/Publish on channel |
+| Duplicate posts after retry | No server idempotency — see [OPERATIONS.md](../../OPERATIONS.md) |
 | Validation on `create-posts` | Verify `channelId`, schedule, platform fields |
 | Empty `get-posts` | Widen date range; check filters |
 
@@ -135,4 +142,4 @@ Use [docs.verlynk.com](https://docs.verlynk.com) Public API for these.
 ## Links
 
 - [MCP_TOOLS.md](../../MCP_TOOLS.md) · [AUTHENTICATION.md](../../AUTHENTICATION.md) · [SECURITY.md](../../SECURITY.md)
-- [FEATURES.md](../../FEATURES.md) · [examples/EXAMPLES.md](../../examples/EXAMPLES.md)
+- [OPERATIONS.md](../../OPERATIONS.md) · [FEATURES.md](../../FEATURES.md) · [examples/EXAMPLES.md](../../examples/EXAMPLES.md)

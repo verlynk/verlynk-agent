@@ -4,7 +4,7 @@ Get connected to Verlynk MCP and run your first agent prompt in about 5 minutes.
 
 ## Step 1: Create an MCP token
 
-1. Sign in to [Verlynk](https://verlynk.com)
+1. Sign in to [Verlynk](https://verlynk.com) with an **active subscription**
 2. Go to **Settings → Developer → Verlynk MCP**
 3. Create an API key with the **`mcp:access`** scope
 4. Copy the key — it starts with `verlynk_` and is shown only once

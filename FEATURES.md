@@ -4,6 +4,8 @@ What is available today via Verlynk MCP and related APIs.
 
 This repo documents **only live, production features**. Items marked "Not available" are intentionally excluded until released.
 
+**Requirements:** Active Verlynk subscription, connected channels, default profile set, and appropriate channel permissions.
+
 ---
 
 ## MCP tools (live)
@@ -19,6 +21,21 @@ Server: `https://verlynk.com/api/public/mcp`
 Auth: API key with `mcp:access` scope **or** OAuth JWT (ChatGPT, Cursor, Claude)
 
 Context: operates on the user's **default profile** only — see [AUTHENTICATION.md](./AUTHENTICATION.md)
+
+---
+
+## Important limitations
+
+| Limitation | Detail |
+| --- | --- |
+| Default profile only | MCP cannot target a non-default profile |
+| Drafts not in `get-posts` | `action: "DRAFT"` saves to draft store — use dashboard to verify |
+| `get-posts` date filter | Filters on `publishAt`, not `createdAt` |
+| No idempotency | Duplicate `create-posts` calls create duplicate posts |
+| Channel permissions | User must have Create + Publish on the channel |
+| Free plan scheduling | Only `NOW`, `ONCE`, `DRAFT` schedule types |
+
+Details: [OPERATIONS.md](./OPERATIONS.md)
 
 ---
 
