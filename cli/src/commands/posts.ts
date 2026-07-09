@@ -1,11 +1,7 @@
 import { readFileSync } from 'fs';
 import { getAPI, resolveProfileId } from '../config.js';
-import type { CreatePostsData, Post, PostInput } from '../api.js';
-
-function truncate(text: string, max: number): string {
-  if (text.length <= max) return text;
-  return text.slice(0, max - 3) + '...';
-}
+import { fail, requireYes, truncate } from '../cli.js';
+import type { CreatePostsData, EditPostRequest, Post, PostInput } from '../api.js';
 
 function getPostText(post: Post): string {
   const contents = post.metaData?.contents;
@@ -51,9 +47,8 @@ export async function listPosts(argv: {
   const api = getAPI();
   const profileId = await resolveProfileId(argv['profile-id']);
 
-  let posts: Post[];
   try {
-    posts = await api.listPosts({
+    const posts = await api.listPosts({
       from: argv.from,
       to: argv.to,
       profileId,
@@ -61,49 +56,46 @@ export async function listPosts(argv: {
       platform: argv.platform,
       channelId: argv['channel-id'],
     });
+
+    if (argv.json) {
+      console.log(JSON.stringify(posts, null, 2));
+      return;
+    }
+
+    if (posts.length === 0) {
+      console.log('No posts found for the given date range.');
+      return;
+    }
+
+    printPostsTable(posts);
   } catch (err: unknown) {
-    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    fail(err);
   }
-
-  if (argv.json) {
-    console.log(JSON.stringify(posts, null, 2));
-    return;
-  }
-
-  if (posts.length === 0) {
-    console.log('No posts found for the given date range.');
-    return;
-  }
-
-  printPostsTable(posts);
 }
 
 export async function getPost(argv: { postId: string; 'profile-id'?: string; json?: boolean }) {
   const api = getAPI();
   const profileId = await resolveProfileId(argv['profile-id']);
 
-  let post: Post;
   try {
-    post = await api.getPost(argv.postId, profileId);
+    const post = await api.getPost(argv.postId, profileId);
+
+    if (argv.json) {
+      console.log(JSON.stringify(post, null, 2));
+      return;
+    }
+
+    console.log(`Post ID:     ${post.postId}`);
+    console.log(`Status:      ${post.postStatus}`);
+    console.log(`Type:        ${post.postType}`);
+    console.log(`Publish At:  ${post.publishAt}`);
+    console.log(`Channel:     ${post.channel?.channelName} (${post.channel?.platformName})`);
+    console.log(`Text:        ${getPostText(post)}`);
+    if (post.errorMessage) {
+      console.log(`Error:       ${post.errorMessage}`);
+    }
   } catch (err: unknown) {
-    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
-  }
-
-  if (argv.json) {
-    console.log(JSON.stringify(post, null, 2));
-    return;
-  }
-
-  console.log(`Post ID:     ${post.postId}`);
-  console.log(`Status:      ${post.postStatus}`);
-  console.log(`Type:        ${post.postType}`);
-  console.log(`Publish At:  ${post.publishAt}`);
-  console.log(`Channel:     ${post.channel?.channelName} (${post.channel?.platformName})`);
-  console.log(`Text:        ${getPostText(post)}`);
-  if (post.errorMessage) {
-    console.log(`Error:       ${post.errorMessage}`);
+    fail(err);
   }
 }
 
@@ -213,8 +205,7 @@ export async function createPost(argv: {
     const result = await api.createPosts(body, profileId);
     console.log(result.message || 'Posts submitted for processing.');
   } catch (err: unknown) {
-    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    fail(err);
   }
 }
 
@@ -228,52 +219,48 @@ export async function listDraftPosts(argv: {
   const api = getAPI();
   const profileId = await resolveProfileId(argv['profile-id']);
 
-  let drafts;
   try {
-    drafts = await api.listDraftPosts({
+    const drafts = await api.listDraftPosts({
       from: argv.from,
       to: argv.to,
       profileId,
       platform: argv.platform,
     });
+
+    if (argv.json) {
+      console.log(JSON.stringify(drafts, null, 2));
+      return;
+    }
+
+    if (drafts.length === 0) {
+      console.log('No drafts found for the given date range.');
+      return;
+    }
+
+    const COL = { id: 36, channels: 30, created: 24 };
+    const header = 'Draft ID'.padEnd(COL.id) + 'Channels'.padEnd(COL.channels) + 'Created At';
+
+    console.log(header);
+    console.log('-'.repeat(header.length));
+
+    for (const draft of drafts) {
+      const channelNames = draft.channels.map((c) => c.channelName || c.platformName).join(', ');
+      const row =
+        draft.draftId.padEnd(COL.id) +
+        truncate(channelNames, COL.channels).padEnd(COL.channels) +
+        draft.createdAt;
+      console.log(row);
+    }
+
+    console.log('');
+    console.log(`${drafts.length} draft(s) listed.`);
   } catch (err: unknown) {
-    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    fail(err);
   }
-
-  if (argv.json) {
-    console.log(JSON.stringify(drafts, null, 2));
-    return;
-  }
-
-  if (drafts.length === 0) {
-    console.log('No drafts found for the given date range.');
-    return;
-  }
-
-  const COL = { id: 36, channels: 30, created: 24 };
-  const header =
-    'Draft ID'.padEnd(COL.id) +
-    'Channels'.padEnd(COL.channels) +
-    'Created At';
-
-  console.log(header);
-  console.log('-'.repeat(header.length));
-
-  for (const draft of drafts) {
-    const channelNames = draft.channels.map((c) => c.channelName || c.platformName).join(', ');
-    const row =
-      draft.draftId.padEnd(COL.id) +
-      truncate(channelNames, COL.channels).padEnd(COL.channels) +
-      draft.createdAt;
-    console.log(row);
-  }
-
-  console.log('');
-  console.log(`${drafts.length} draft(s) listed.`);
 }
 
-export async function deletePost(argv: { postId: string; 'profile-id'?: string }) {
+export async function deletePost(argv: { postId: string; 'profile-id'?: string; yes?: boolean }) {
+  requireYes(argv, `delete post ${argv.postId}`);
   const api = getAPI();
   const profileId = await resolveProfileId(argv['profile-id']);
 
@@ -281,7 +268,133 @@ export async function deletePost(argv: { postId: string; 'profile-id'?: string }
     await api.deletePost(argv.postId, profileId);
     console.log(`Post ${argv.postId} deleted successfully.`);
   } catch (err: unknown) {
-    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+    fail(err);
+  }
+}
+
+export async function retryPost(argv: { postId: string; 'profile-id'?: string }) {
+  const api = getAPI();
+  const profileId = await resolveProfileId(argv['profile-id']);
+  try {
+    const result = await api.retryPost(argv.postId, profileId);
+    console.log(result.message || `Retry submitted for post ${argv.postId}.`);
+  } catch (err: unknown) {
+    fail(err);
+  }
+}
+
+export async function updatePost(argv: {
+  postId: string;
+  content?: string | string[];
+  accounts?: string;
+  date?: string;
+  type?: 'schedule' | 'draft' | 'publish';
+  timezone?: string;
+  'post-type'?: string;
+  'profile-id'?: string;
+  json?: string;
+  settings?: string;
+}) {
+  const api = getAPI();
+  const profileId = await resolveProfileId(argv['profile-id']);
+  const timezone = argv.timezone || 'UTC';
+
+  let body: EditPostRequest;
+
+  if (argv.json) {
+    try {
+      body = JSON.parse(readFileSync(argv.json, 'utf-8')) as EditPostRequest;
+    } catch (err: unknown) {
+      console.error(`Error reading JSON file: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  } else {
+    const contents = argv.content
+      ? Array.isArray(argv.content)
+        ? argv.content
+        : [argv.content]
+      : [];
+
+    if (contents.length === 0) {
+      console.error('Error: --content (-c) or --json is required.');
+      process.exit(1);
+    }
+
+    if (!argv.accounts) {
+      console.error('Error: --accounts (-i) is required when not using --json.');
+      process.exit(1);
+    }
+
+    const channelId = argv.accounts.split(',').map((id) => id.trim()).filter(Boolean)[0];
+    if (!channelId) {
+      console.error('Error: --accounts (-i) must contain one channel id for posts:update.');
+      process.exit(1);
+    }
+
+    const postType = argv['post-type'] || 'post';
+    const actionType = argv.type || 'schedule';
+
+    let action: CreatePostsData['action'];
+    let scheduleType: string;
+    let scheduleDetails: Record<string, unknown>;
+
+    switch (actionType) {
+      case 'publish':
+        action = 'PUBLISH';
+        scheduleType = 'NOW';
+        scheduleDetails = { timezone };
+        break;
+      case 'draft':
+        action = 'DRAFT';
+        scheduleType = 'DRAFT';
+        if (!argv.date) {
+          console.error('Error: --date (-d) is required for draft posts.');
+          process.exit(1);
+        }
+        scheduleDetails = { timezone, utc: argv.date };
+        break;
+      case 'schedule':
+      default:
+        action = 'SCHEDULE';
+        scheduleType = 'ONCE';
+        if (!argv.date) {
+          console.error('Error: --date (-d) is required for scheduled posts.');
+          process.exit(1);
+        }
+        scheduleDetails = { timezone, utc: argv.date };
+        break;
+    }
+
+    let platformSettings: Record<string, unknown> = {};
+    if (argv.settings) {
+      try {
+        platformSettings = JSON.parse(argv.settings) as Record<string, unknown>;
+      } catch {
+        console.error('Error: --settings must be valid JSON.');
+        process.exit(1);
+      }
+    }
+
+    const post: PostInput = {
+      channelId,
+      postType,
+      metaData: {
+        contents: [{ text: contents[0], media: [] }],
+        ...platformSettings,
+      },
+      schedule: {
+        type: scheduleType,
+        details: scheduleDetails,
+      },
+    };
+
+    body = { action, post };
+  }
+
+  try {
+    await api.updatePost(argv.postId, body, profileId);
+    console.log(`Post ${argv.postId} updated successfully.`);
+  } catch (err: unknown) {
+    fail(err);
   }
 }

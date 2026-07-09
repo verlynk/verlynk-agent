@@ -47,6 +47,133 @@ export interface CreatePostsData {
   campaign?: string;
 }
 
+export interface EditPostRequest {
+  action: CreatePostsData['action'];
+  post: PostInput;
+  labels?: string[];
+  workflowId?: string;
+  campaign?: string;
+}
+
+export interface ValidatePostLengthRequest {
+  text: string;
+}
+
+export type ValidatePostLengthPlatforms = Record<
+  string,
+  { count: number; limit: number; valid: boolean }
+>;
+
+export interface ValidatePostLengthResponse {
+  text: string;
+  platforms: ValidatePostLengthPlatforms;
+}
+
+export type ApiKeyPermission = 'read' | 'read-write';
+export type ApiKeyScopeMode = 'full' | 'profiles';
+
+export interface ApiKey {
+  id: string;
+  name: string;
+  keyPreview: string;
+  key?: string;
+  expiresAt: string | null;
+  createdAt: string;
+  scope: ApiKeyScopeMode;
+  profileIds: string[];
+  permission: ApiKeyPermission;
+}
+
+export interface CreateApiKeyRequest {
+  name: string;
+  expiresIn?: number;
+  scope?: ApiKeyScopeMode;
+  profileIds?: string[];
+  permission?: ApiKeyPermission;
+}
+
+export interface CreateApiKeyResponse {
+  message: string;
+  apiKey: ApiKey & { key: string };
+}
+
+export interface CreateProfileRequest {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateProfileRequest {
+  name?: string;
+  description?: string;
+  isDefault?: boolean;
+}
+
+export interface ProfileMutationResponse {
+  message: string;
+  profile: Profile;
+}
+
+export interface PostMetricValue {
+  metric: number;
+  compare?: unknown;
+}
+
+export type PostMetricsResponse = Record<string, PostMetricValue>;
+
+export interface PostingWindowTimeSlot {
+  day: number;
+  hour: number;
+  score: number;
+  postCount: number;
+  avgEngagement: number;
+}
+
+export interface PostingWindow {
+  slots: PostingWindowTimeSlot[];
+  dataSource: 'channel_analytics' | 'platform_heuristics' | 'mixed';
+  confidenceLevel: 'high' | 'medium' | 'low';
+  dataPoints: number;
+  computedAt: string;
+  timezone: string;
+}
+
+export interface BestTimeWindowLine {
+  type: 'window';
+  payload: PostingWindow;
+}
+
+export interface BestTimeNarrativeLine {
+  type: 'narrative';
+  text: string;
+}
+
+export type BestTimeLine = BestTimeWindowLine | BestTimeNarrativeLine;
+
+export interface UsageStatsResponse {
+  planId: string;
+  planName: string;
+  planStatus:
+    | 'TRIAL_ACTIVE'
+    | 'TRIAL_EXPIRED'
+    | 'CANCEL_SCHEDULED'
+    | 'PAST_DUE'
+    | 'ACTIVE'
+    | 'CANCELLED';
+  paymentProvider?: 'PADDLE' | 'APPLE_APP_STORE' | 'GOOGLE_PLAY' | null;
+  maxChannels: number;
+  currentChannels: number;
+  baseChannelLimit?: number;
+  addonQuantity?: number | null;
+  billingPeriod?: 'monthly' | 'annual' | null;
+  billedOn?: string | null;
+  nextBillingDate?: string | null;
+  currentStartDate?: string | null;
+  currentEndDate?: string | null;
+  trialExpiresAt?: string | null;
+  canceledAt?: string | null;
+  lastPaymentMethod?: unknown;
+}
+
 export interface PostInput {
   channelId: string;
   postType: string;
@@ -73,14 +200,10 @@ export class VerlynkAPI {
     this.baseUrl = config.apiUrl || BASE_URL;
   }
 
-  private async request<T = unknown>(
-    endpoint: string,
-    options: { method?: string; body?: unknown; params?: Record<string, unknown> } = {}
-  ): Promise<T> {
+  private buildUrl(endpoint: string, params?: Record<string, unknown>): URL {
     const url = new URL(`${this.baseUrl}${endpoint}`);
-
-    if (options.params) {
-      for (const [key, value] of Object.entries(options.params)) {
+    if (params) {
+      for (const [key, value] of Object.entries(params)) {
         if (value === undefined || value === null) continue;
         if (Array.isArray(value)) {
           for (const v of value) url.searchParams.append(key, String(v));
@@ -89,8 +212,49 @@ export class VerlynkAPI {
         }
       }
     }
+    return url;
+  }
 
-    const res = await fetch(url.toString(), {
+  private async parseError(res: Response): Promise<string> {
+    let message = `HTTP ${res.status}`;
+    try {
+      const err = (await res.json()) as { message?: string; errorCode?: string };
+      message = err.message ? `${err.errorCode ? `[${err.errorCode}] ` : ''}${err.message}` : message;
+    } catch {
+      message = await res.text().catch(() => message);
+    }
+    return message;
+  }
+
+  private async requestNdjson<T>(endpoint: string, params?: Record<string, unknown>): Promise<T[]> {
+    const res = await fetch(this.buildUrl(endpoint, params).toString(), {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`API Error (${res.status}): ${await this.parseError(res)}`);
+    }
+
+    const text = await res.text();
+    if (!text.trim()) return [];
+
+    const lines: T[] = [];
+    for (const line of text.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      lines.push(JSON.parse(trimmed) as T);
+    }
+    return lines;
+  }
+
+  private async request<T = unknown>(
+    endpoint: string,
+    options: { method?: string; body?: unknown; params?: Record<string, unknown> } = {}
+  ): Promise<T> {
+    const res = await fetch(this.buildUrl(endpoint, options.params).toString(), {
       method: options.method || 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -100,19 +264,19 @@ export class VerlynkAPI {
     });
 
     if (!res.ok) {
-      let message = `HTTP ${res.status}`;
-      try {
-        const err = (await res.json()) as { message?: string; errorCode?: string };
-        message = err.message ? `${err.errorCode ? `[${err.errorCode}] ` : ''}${err.message}` : message;
-      } catch {
-        message = await res.text().catch(() => message);
-      }
-      throw new Error(`API Error (${res.status}): ${message}`);
+      throw new Error(`API Error (${res.status}): ${await this.parseError(res)}`);
     }
 
     if (res.status === 204) return undefined as T;
 
-    return res.json() as Promise<T>;
+    // Some endpoints return 200 with an empty body (e.g. PUT /v1/posts/{postId}).
+    const contentLength = res.headers.get('content-length');
+    const contentType = res.headers.get('content-type') || '';
+    if (contentLength === '0' || !contentType) return undefined as T;
+
+    const text = await res.text();
+    if (!text) return undefined as T;
+    return JSON.parse(text) as T;
   }
 
   getUserContext() {
@@ -167,6 +331,112 @@ export class VerlynkAPI {
       } as Record<string, unknown>,
     });
   }
+
+  listProfiles(params?: { includeOverLimit?: boolean }) {
+    return this.request<{ profiles: Profile[] }>('/v1/profiles', {
+      params: params as Record<string, unknown>,
+    });
+  }
+
+  getProfile(profileId: string) {
+    return this.request<{ profile: Profile }>(`/v1/profiles/${profileId}`);
+  }
+
+  getUsageStats() {
+    return this.request<UsageStatsResponse>('/v1/usage-stats');
+  }
+
+  validatePostLength(body: ValidatePostLengthRequest) {
+    return this.request<ValidatePostLengthResponse>('/v1/tools/validate/post-length', {
+      method: 'POST',
+      body,
+    });
+  }
+
+  updatePost(postId: string, body: EditPostRequest, profileId?: string) {
+    return this.request<void>(`/v1/posts/${postId}`, {
+      method: 'PUT',
+      body,
+      params: profileId ? { profileId } : undefined,
+    });
+  }
+
+  retryPost(postId: string, profileId?: string) {
+    return this.request<{ message?: string }>(`/v1/posts/${postId}/retry`, {
+      method: 'POST',
+      params: profileId ? { profileId } : undefined,
+    });
+  }
+
+  updateDraftPost(draftId: string, body: CreatePostsData, profileId?: string) {
+    return this.request<{ message?: string }>(`/v1/posts/drafts/${draftId}`, {
+      method: 'PUT',
+      body,
+      params: profileId ? { profileId } : undefined,
+    });
+  }
+
+  deleteDraftPost(draftId: string, profileId?: string) {
+    return this.request<void>(`/v1/posts/drafts/${draftId}`, {
+      method: 'DELETE',
+      params: profileId ? { profileId } : undefined,
+    });
+  }
+
+  listApiKeys() {
+    return this.request<{ apiKeys: ApiKey[] }>('/v1/api-keys');
+  }
+
+  createApiKey(body: CreateApiKeyRequest) {
+    return this.request<CreateApiKeyResponse>('/v1/api-keys', {
+      method: 'POST',
+      body,
+    });
+  }
+
+  deleteApiKey(keyId: string) {
+    return this.request<{ message: string }>(`/v1/api-keys/${keyId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  deleteAccount(accountId: string) {
+    return this.request<{ message: string }>(`/v1/accounts/${accountId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  createProfile(body: CreateProfileRequest) {
+    return this.request<ProfileMutationResponse>('/v1/profiles', {
+      method: 'POST',
+      body,
+    });
+  }
+
+  updateProfile(profileId: string, body: UpdateProfileRequest) {
+    return this.request<ProfileMutationResponse>(`/v1/profiles/${profileId}`, {
+      method: 'PUT',
+      body,
+    });
+  }
+
+  deleteProfile(profileId: string) {
+    return this.request<{ message: string }>(`/v1/profiles/${profileId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  getPostMetrics(postId: string) {
+    return this.request<PostMetricsResponse>(`/v1/analytics/${postId}`);
+  }
+
+  getAnalyticsBestTime(params: { accountId: string; profileId?: string; postType?: string }) {
+    const { profileId, ...rest } = params;
+    return this.requestNdjson<BestTimeLine>('/v1/analytics/best-time', {
+      ...rest,
+      ...(profileId ? { profileId } : {}),
+    });
+  }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -202,6 +472,16 @@ export interface SocialAccount {
   isActive: boolean;
   isOverLimit?: boolean;
   followersCount?: number;
+}
+
+export interface Profile {
+  _id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  isDefault: boolean;
+  isOverLimit?: boolean;
+  createdAt: string;
 }
 
 export interface PostChannel {

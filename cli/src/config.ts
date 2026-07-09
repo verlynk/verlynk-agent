@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync, chmodSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { VerlynkAPI, UserOrg } from './api.js';
@@ -20,6 +20,21 @@ export function loadCredentials(): StoredCredentials | null {
     return data;
   } catch {
     return null;
+  }
+}
+
+export function saveCredentials(creds: StoredCredentials): void {
+  if (!existsSync(CREDENTIALS_DIR)) {
+    mkdirSync(CREDENTIALS_DIR, { recursive: true });
+  }
+  writeFileSync(CREDENTIALS_FILE, JSON.stringify(creds, null, 2), {
+    encoding: 'utf-8',
+    mode: 0o600,
+  });
+  try {
+    chmodSync(CREDENTIALS_FILE, 0o600);
+  } catch {
+    // chmod may not work on Windows — not fatal
   }
 }
 
