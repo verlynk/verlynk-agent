@@ -1,10 +1,13 @@
 {
-  "name": "verlynk",
+  "name": "@verlynk/cli",
   "version": "1.0.0",
   "description": "CLI for Verlynk — schedule and manage social media posts",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "bin": {
-    "verlynk": "./dist/index.js"
+    "verlynk": "dist/index.js"
   },
   "scripts": {
     "build": "tsup",
@@ -16,7 +19,13 @@
     "dist",
     "README.md"
   ],
-  "keywords": ["verlynk", "cli", "social-media", "scheduling", "automation"],
+  "keywords": [
+    "verlynk",
+    "cli",
+    "social-media",
+    "scheduling",
+    "automation"
+  ],
   "author": "",
   "license": "MIT",
   "engines": {

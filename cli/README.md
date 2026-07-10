@@ -11,9 +11,9 @@ Requirements: **Node.js 18+**
 ## Installation
 
 ```bash
-npm install -g verlynk
+npm install -g @verlynk/cli
 # or
-pnpm install -g verlynk
+pnpm install -g @verlynk/cli
 
 verlynk --version
 ```
