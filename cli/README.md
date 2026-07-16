@@ -143,6 +143,18 @@ verlynk drafts:delete <draft-id> --yes
 
 Date range for list/drafts is required (max 40 days).
 
+### Inbox (comments & replies)
+
+Built for AI agents: fetch comments, decide externally what to say, reply, and triage — Verlynk never generates reply text.
+
+```bash
+verlynk inbox:list --from 2026-07-01 --to 2026-07-16 --status OPEN --json
+verlynk inbox:reply <item-id> -m "Thanks for your feedback!"
+verlynk inbox:status <item-id> --status CLOSED
+```
+
+Only top-level comments (`type: "COMMENT"`) can be replied to; date range is required (max 40 days). See [docs.verlynk.com/cli/inbox](https://docs.verlynk.com/cli/inbox).
+
 ### Analytics
 
 ```bash
@@ -209,6 +221,7 @@ verlynk usage
 - **Exit code 1** — Error (`Error: ...` on stderr)
 - `validate --strict` exits `1` when any platform exceeds its limit
 - Destructive commands require `--yes` / `-y`: `posts:delete`, `drafts:delete`, `keys:delete`, `profiles:delete`, `accounts:disconnect`
+- `inbox:list` / `inbox:reply` / `inbox:status` with `--json`: on failure, prints a single JSON object (`{ errorCode, message, retryable, action }`) on stderr instead of `Error: ...` text — safe for agents to parse
 
 | Error | Solution |
 | --- | --- |
@@ -216,6 +229,7 @@ verlynk usage
 | Profile resolution errors | `verlynk profiles:list` then `profiles:use <id>` |
 | `API_KEY_SCOPE_DENIED` | Key is missing the required scope |
 | `INVALID_PLAN` on analytics | Plan does not include that feature |
+| `REPLY_NOT_SUPPORTED` on `inbox:reply` | Item is a `REPLY` or has no linked post — reply to the top-level comment instead |
 
 Rate limits: **120 req/min**, burst **30 / 10s**. See [Rate Limits](https://docs.verlynk.com/reference/rate-limits).
 
@@ -279,6 +293,11 @@ verlynk posts:create --media-file ./photo.png -c "Caption" -i "id" -d "2026-07-1
 verlynk posts:create --json file.json
 verlynk posts:list --from 2026-07-01 --to 2026-07-31
 verlynk validate -t "text"
+
+# Inbox
+verlynk inbox:list --from 2026-07-01 --to 2026-07-16 --status OPEN --json
+verlynk inbox:reply <item-id> -m "Thanks for your feedback!"
+verlynk inbox:status <item-id> --status CLOSED
 
 # Analytics & usage
 verlynk analytics:post <id>

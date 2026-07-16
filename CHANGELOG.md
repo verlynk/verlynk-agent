@@ -2,6 +2,21 @@
 
 All notable changes to this documentation repo are listed here.
 
+## [1.5.0] - 2026-07-16
+
+### Added
+
+- npm CLI package bumped to **`verlynk@1.2.0`** — adds `inbox:list`, `inbox:reply`, `inbox:status`
+- Inbox live via **Public API + CLI** (`/v1/inbox/*`, `inbox:list`\|`reply`\|`status`) — list/reply/triage comments and replies across connected channels; still **not available via MCP**
+- [docs.verlynk.com/cli/inbox](https://docs.verlynk.com/cli/inbox): purpose, commands, JSON shapes, agent workflow, error codes
+- CLI `--json` mode now prints structured `{ errorCode, message, retryable, action }` for inbox errors instead of free-form text
+
+### Notes
+
+- Inbox v1 covers **comments and replies only** — no DMs, mentions, or other engagement types yet
+- `inboxStatus` (`OPEN`\|`FOLLOWUP`\|`CLOSED`) is a manual triage flag, not an "already replied" indicator
+- Reply-to-reply is unsupported; reply to the top-level comment id instead
+
 ## [1.4.1] - 2026-07-16
 
 ### Changed

@@ -50,6 +50,7 @@ Details: [OPERATIONS.md](./OPERATIONS.md)
 | Connect channels | `/v1/connect/*` | **Live** | [docs.verlynk.com](https://docs.verlynk.com) |
 | Analytics | `/v1/analytics/*` | **Live** | [docs.verlynk.com](https://docs.verlynk.com) |
 | Post length validation | `POST /v1/tools/validate/post-length` | **Live** | [docs.verlynk.com](https://docs.verlynk.com) |
+| Inbox: list/reply/status (comments + replies) | `/v1/inbox/*` | **Live** (CLI: `inbox:list`\|`reply`\|`status`) | [docs.verlynk.com/cli/inbox](https://docs.verlynk.com/cli/inbox) |
 
 ---
 
@@ -60,7 +61,8 @@ Details: [OPERATIONS.md](./OPERATIONS.md)
 | AI campaign scheduling | **Not available** | Use Public API or Verlynk dashboard |
 | ChatGPT channel widget | **Not available** | — |
 | OAuth device flow for CLI | **Not available** | Use MCP API key instead |
-| Inbox / DMs | **Not available via MCP** | Use Public API or dashboard |
+| Inbox (comments/replies) | **Not available via MCP** | Live via Public API + CLI (`inbox:list`\|`reply`\|`status`) — see [Public API supplements](#public-api-supplements-live-not-mcp) |
+| DMs / mentions | **Not available** | Not yet implemented anywhere (Public API, CLI, or MCP) |
 | Webhooks | **Not available via MCP** | Use Public API |
 | Post analytics | **Not available via MCP** | Use Public API |
 | Channel connect | **Not available via MCP** | Use Public API or dashboard |

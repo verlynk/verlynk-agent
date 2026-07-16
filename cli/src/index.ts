@@ -26,6 +26,7 @@ import {
   updatePost,
 } from './commands/posts.js';
 import { uploadMedia } from './commands/media.js';
+import { listInboxItems, replyInboxItem, updateInboxItemStatus } from './commands/inbox.js';
 
 yargs(hideBin(process.argv))
   .scriptName('verlynk')
@@ -610,6 +611,119 @@ yargs(hideBin(process.argv))
         .example('$0 usage', 'Show plan and channel usage'),
     usage as never
   )
+  .command(
+    'inbox:list',
+    'List inbox items (comments and replies) in a date range',
+    (y: Argv) =>
+      y
+        .option('from', {
+          describe: 'Start date (YYYY-MM-DD)',
+          type: 'string',
+          demandOption: true,
+        })
+        .option('to', {
+          describe: 'End date (YYYY-MM-DD, max 40 days after --from)',
+          type: 'string',
+          demandOption: true,
+        })
+        .option('platform', {
+          describe: 'Filter by platform (instagram, facebook, x, etc.)',
+          type: 'string',
+        })
+        .option('channel-id', {
+          describe: 'Filter by channel/account UUID',
+          type: 'string',
+        })
+        .option('status', {
+          describe: 'Filter by inbox status',
+          type: 'string',
+          choices: ['OPEN', 'FOLLOWUP', 'CLOSED'],
+        })
+        .option('type', {
+          describe: 'Only top-level comments or only replies',
+          type: 'string',
+          choices: ['COMMENT', 'REPLY'],
+        })
+        .option('by-time', {
+          describe: 'Sort order',
+          type: 'string',
+          choices: ['newest', 'oldest'],
+          default: 'newest',
+        })
+        .option('page', { describe: 'Page number (default 1)', type: 'number' })
+        .option('limit', { describe: 'Items per page (default 10, max 100)', type: 'number' })
+        .option('profile-id', {
+          describe: 'Profile (project) UUID',
+          type: 'string',
+        })
+        .option('json', {
+          describe: 'Output raw JSON',
+          type: 'boolean',
+          default: false,
+        })
+        .example(
+          '$0 inbox:list --from 2026-07-01 --to 2026-07-16 --status OPEN --json',
+          'List open inbox items as JSON'
+        ),
+    listInboxItems as never
+  )
+  .command(
+    'inbox:reply <itemId>',
+    'Reply to a top-level inbox comment',
+    (y: Argv) =>
+      y
+        .positional('itemId', {
+          describe: 'Inbox item UUID from inbox:list (must be a top-level COMMENT)',
+          type: 'string',
+        })
+        .option('message', {
+          alias: 'm',
+          describe: 'Reply text',
+          type: 'string',
+          demandOption: true,
+        })
+        .option('profile-id', {
+          describe: 'Profile (project) UUID',
+          type: 'string',
+        })
+        .option('json', {
+          describe: 'Output raw JSON',
+          type: 'boolean',
+          default: false,
+        })
+        .example(
+          '$0 inbox:reply abc123-... -m "Thanks for your feedback!"',
+          'Reply to an inbox item'
+        ),
+    replyInboxItem as never
+  )
+  .command(
+    'inbox:status <itemId>',
+    'Update the triage status of an inbox item',
+    (y: Argv) =>
+      y
+        .positional('itemId', {
+          describe: 'Inbox item UUID from inbox:list',
+          type: 'string',
+        })
+        .option('status', {
+          describe: 'New inbox status',
+          type: 'string',
+          choices: ['OPEN', 'FOLLOWUP', 'CLOSED'],
+          demandOption: true,
+        })
+        .option('profile-id', {
+          describe: 'Profile (project) UUID',
+          type: 'string',
+        })
+        .option('json', {
+          describe: 'Output raw JSON',
+          type: 'boolean',
+          default: false,
+        })
+        .example('$0 inbox:status abc123-... --status CLOSED', 'Mark an inbox item as closed'),
+    updateInboxItemStatus as never
+  )
   .demandCommand(1, 'You need at least one command')
   .help()
   .alias('h', 'help')
@@ -623,6 +737,7 @@ yargs(hideBin(process.argv))
       'Profiles:  profiles:list|get|use|create|update|delete\n' +
       'Accounts:  accounts:list|disconnect\n' +
       'Keys:      keys:list|create|delete\n' +
-      'Analytics: analytics:post|best-time'
+      'Analytics: analytics:post|best-time\n' +
+      'Inbox:     inbox:list|reply|status'
   )
   .parse();

@@ -5,6 +5,36 @@ export interface VerlynkConfig {
   apiUrl?: string;
 }
 
+interface ApiErrorBody {
+  message?: string;
+  errorCode?: string;
+  retryable?: boolean;
+  action?: string;
+}
+
+/**
+ * Thrown by `VerlynkAPI.request()` for any non-OK HTTP response. Carries the
+ * structured fields the Public V1 Inbox API returns (`errorCode`, `retryable`,
+ * `action`) so `--json` callers can emit a machine-readable error instead of
+ * scraping `Error: ...` text. Still an `Error` subclass, so existing
+ * `err instanceof Error ? err.message : String(err)` call sites are unaffected.
+ */
+export class VerlynkApiError extends Error {
+  readonly status: number;
+  readonly errorCode?: string;
+  readonly retryable?: boolean;
+  readonly action?: string;
+
+  constructor(status: number, message: string, details?: ApiErrorBody) {
+    super(message);
+    this.name = 'VerlynkApiError';
+    this.status = status;
+    this.errorCode = details?.errorCode;
+    this.retryable = details?.retryable;
+    this.action = details?.action;
+  }
+}
+
 export interface ListAccountsParams {
   profileId?: string;
   platform?: string;
@@ -37,6 +67,97 @@ export interface ListDraftPostsParams {
   labels?: string | string[];
   campaign?: string | string[];
   author?: string | string[];
+}
+
+export type InboxItemType = 'COMMENT' | 'REPLY';
+export type InboxStatus = 'OPEN' | 'FOLLOWUP' | 'CLOSED';
+export type InboxByTime = 'newest' | 'oldest';
+
+export interface ListInboxParams {
+  from: string;
+  to: string;
+  profileId?: string;
+  platform?: string | string[];
+  channelId?: string | string[];
+  inboxStatus?: InboxStatus | InboxStatus[];
+  type?: InboxItemType;
+  byTime?: InboxByTime;
+  page?: number;
+  limit?: number;
+}
+
+export interface InboxAuthor {
+  name: string;
+  profileUrl: string | null;
+}
+
+export interface InboxParent {
+  id: string;
+  text: string;
+  author: string;
+}
+
+export interface InboxPost {
+  postId: string;
+  textPreview: string | null;
+  publishAt: string | null;
+}
+
+export interface InboxAttachment {
+  url?: string;
+  contentType?: string;
+}
+
+export interface InboxItem {
+  id: string;
+  type: InboxItemType;
+  platform: string;
+  channelId: string;
+  channelName: string;
+  inboxStatus: InboxStatus;
+  createdAt: string;
+  author: InboxAuthor;
+  text: string;
+  isHidden: boolean;
+  canReply: boolean;
+  platformUrl: string | null;
+  parent: InboxParent | null;
+  post: InboxPost | null;
+  attachments: InboxAttachment[];
+}
+
+export interface InboxPagination {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+export interface ListInboxResponse {
+  items: InboxItem[];
+  pagination: InboxPagination;
+}
+
+export interface ReplyInboxRequest {
+  message: string;
+}
+
+export interface ReplyInboxResponse {
+  ok: true;
+  itemId: string;
+  replyId: string | null;
+  platform: string;
+  message: string;
+}
+
+export interface UpdateInboxStatusRequest {
+  status: InboxStatus;
+}
+
+export interface UpdateInboxStatusResponse {
+  ok: true;
+  itemId: string;
+  inboxStatus: InboxStatus;
 }
 
 export interface CreatePostsData {
@@ -245,15 +366,20 @@ export class VerlynkAPI {
     return url;
   }
 
-  private async parseError(res: Response): Promise<string> {
-    let message = `HTTP ${res.status}`;
+  private async parseError(res: Response): Promise<ApiErrorBody> {
     try {
-      const err = (await res.json()) as { message?: string; errorCode?: string };
-      message = err.message ? `${err.errorCode ? `[${err.errorCode}] ` : ''}${err.message}` : message;
+      return (await res.json()) as ApiErrorBody;
     } catch {
-      message = await res.text().catch(() => message);
+      return { message: await res.text().catch(() => undefined) };
     }
-    return message;
+  }
+
+  private async toApiError(res: Response): Promise<VerlynkApiError> {
+    const body = await this.parseError(res);
+    const detail = body.message
+      ? `${body.errorCode ? `[${body.errorCode}] ` : ''}${body.message}`
+      : `HTTP ${res.status}`;
+    return new VerlynkApiError(res.status, `API Error (${res.status}): ${detail}`, body);
   }
 
   private async requestNdjson<T>(endpoint: string, params?: Record<string, unknown>): Promise<T[]> {
@@ -265,7 +391,7 @@ export class VerlynkAPI {
     });
 
     if (!res.ok) {
-      throw new Error(`API Error (${res.status}): ${await this.parseError(res)}`);
+      throw await this.toApiError(res);
     }
 
     const text = await res.text();
@@ -294,7 +420,7 @@ export class VerlynkAPI {
     });
 
     if (!res.ok) {
-      throw new Error(`API Error (${res.status}): ${await this.parseError(res)}`);
+      throw await this.toApiError(res);
     }
 
     if (res.status === 204) return undefined as T;
@@ -492,6 +618,32 @@ export class VerlynkAPI {
     return this.requestNdjson<BestTimeLine>('/v1/analytics/best-time', {
       ...rest,
       ...(profileId ? { profileId } : {}),
+    });
+  }
+
+  listInbox(params: ListInboxParams) {
+    const { profileId, ...rest } = params;
+    return this.request<ListInboxResponse>('/v1/inbox', {
+      params: {
+        ...rest,
+        ...(profileId ? { profileId } : {}),
+      } as Record<string, unknown>,
+    });
+  }
+
+  replyInbox(itemId: string, body: ReplyInboxRequest, profileId?: string) {
+    return this.request<ReplyInboxResponse>(`/v1/inbox/${itemId}/reply`, {
+      method: 'POST',
+      body,
+      params: profileId ? { profileId } : undefined,
+    });
+  }
+
+  updateInboxStatus(itemId: string, body: UpdateInboxStatusRequest, profileId?: string) {
+    return this.request<UpdateInboxStatusResponse>(`/v1/inbox/${itemId}/status`, {
+      method: 'PUT',
+      body,
+      params: profileId ? { profileId } : undefined,
     });
   }
 }
