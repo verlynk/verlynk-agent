@@ -115,6 +115,7 @@ These may be added in future releases. They are **not documented as available** 
 - Post analytics via MCP
 - Channel connect via MCP
 - OAuth device flow for local agents
-- npm CLI package
+
+The **npm CLI** (`verlynk` in [`cli/`](./cli/)) ships with this repo — see [cli/README.md](./cli/README.md).
 
 Track releases in [CHANGELOG.md](./CHANGELOG.md).

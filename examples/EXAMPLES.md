@@ -92,21 +92,40 @@ Schedule the same announcement on my LinkedIn and X channels for July 8 at 2pm U
 
 ## Image post with media upload
 
-MCP does not upload files. Use Public API presign first.
+**Prefer CLI for local files** (Claude Code):
 
-### Step 1: Upload image
+```bash
+verlynk media:upload ./hero-image.jpg --json
+verlynk posts:create --media-file ./hero-image.jpg \
+  -c "New hero image for our landing page!" \
+  -i "YOUR_CHANNEL_ID" \
+  -d "2026-07-09T12:00:00.000Z" \
+  --profile-id "YOUR_PROFILE_ID"
+```
+
+CLI JSON shape (Public API — uses `mediaId`, **not** `mediaUrl`): [`create-image-post-cli.json`](./create-image-post-cli.json)
+
+---
+
+### MCP path (URL-based media)
+
+MCP does not upload files. Upload first, then pass `publicUrl` as `mediaUrl`.
+
+#### Step 1: Upload image
 
 ```bash
 export VERLYNK_API_KEY="your_api_key_with_posts_write"
-export VERLYNK_PROFILE_ID="your-profile-uuid"  # if multi-profile org
+export VERLYNK_PROFILE_ID="your-profile-uuid"
 
+# Preferred
+verlynk media:upload ./hero-image.jpg --json
+
+# Or shell script (prints mediaId + publicUrl after complete)
 chmod +x examples/upload-media.sh
 ./examples/upload-media.sh ./hero-image.jpg "$VERLYNK_PROFILE_ID"
 ```
 
-Copy `publicUrl` from the output.
-
-### Step 2: Create post with media
+#### Step 2: MCP create-posts
 
 **Agent prompt:**
 
@@ -116,7 +135,7 @@ Caption: "New hero image for our landing page!"
 Media URL: https://cdn.verlynk.com/temp/.../hero-image.jpg
 ```
 
-**MCP tool:** `create-posts`
+**MCP tool:** `create-posts` — media shape is MCP-only `{ mediaUrl, mimeType }`:
 
 ```json
 {
@@ -151,7 +170,7 @@ Media URL: https://cdn.verlynk.com/temp/.../hero-image.jpg
 }
 ```
 
-See [MEDIA.md](../MEDIA.md) for full upload details.
+See [MEDIA.md](../MEDIA.md) — do not mix MCP and CLI media field names.
 
 ---
 

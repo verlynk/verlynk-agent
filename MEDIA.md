@@ -1,73 +1,132 @@
 # Media Upload
 
-The MCP `create-posts` tool accepts `mediaUrl` in post content but does **not** include an upload tool. Use the **Public API v1 presign endpoint** to upload local files.
+There are **two different media shapes**. Mixing them causes API validation errors.
 
-## When you need this
+| Path | Auth | Local files | Media object in post |
+| --- | --- | --- | --- |
+| **CLI / Public API** | `VERLYNK_API_KEY` (`posts:write`) | `verlynk media:upload` or presign → PUT → complete | `{ "mediaId", "fileType", "contentType" }` |
+| **MCP `create-posts`** | MCP key (`mcp:access`) | Upload via CLI/API first, then pass CDN URL | `{ "mediaUrl", "mimeType" }` |
 
-- Posting images or videos from local files
-- TikTok, Instagram, and YouTube (require trusted/verified URLs)
-- Any post where `metaData.contents[].media[]` needs a `mediaUrl`
+**Never** put `mediaUrl` / `mimeType` in CLI `--json`. **Never** put `mediaId` / `fileType` in MCP `create-posts`.
 
-## Authentication
+---
 
-Media presign requires a **Public API key** with the `posts:write` scope — not the MCP key.
-
-| Key | Scope | Used for |
-| --- | --- | --- |
-| MCP key | `mcp:access` | MCP tools |
-| Public API key | `posts:write` | Media presign |
-
-Create keys in **Settings → Developer** or via `POST /v1/api-keys`.
-
-**Billing:** Presign requires an organization with a valid billing plan. Requests from orgs without an active plan return `400`.
-
-If your organization has multiple profiles, pass `profileId` as a query parameter. List profiles with `GET /v1/profiles`.
-
-## Upload workflow
-
-### 1. Request a presigned URL
+## Preferred: CLI (local files)
 
 ```bash
-curl -s -X POST "https://verlynk.com/api/v1/media/presign?profileId=YOUR_PROFILE_ID" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "filename": "hero-image.jpg",
-    "contentType": "image/jpeg",
-    "size": 2048576
-  }'
+# Upload
+verlynk media:upload ~/Pictures/quote.png --json
+# → mediaId, publicUrl, fileType, contentType
+
+# Schedule with image in one step
+verlynk posts:create --media-file ~/Pictures/quote.png \
+  -c "Caption here" \
+  -i "<channel-id>" \
+  -d "2026-07-16T05:30:00.000Z" \
+  --timezone Asia/Calcutta \
+  --profile-id "<profile-that-owns-channel>"
 ```
 
-**Response:**
-
-```json
-{
-  "uploadUrl": "https://s3.amazonaws.com/bucket/temp/...?X-Amz-Signature=...",
-  "publicUrl": "https://cdn.verlynk.com/temp/.../hero-image.jpg",
-  "key": "temp/.../hero-image.jpg",
-  "type": "image"
-}
-```
-
-The `uploadUrl` expires after **1 hour**.
-
-### 2. Upload the file
+Text-only (no media):
 
 ```bash
-curl -X PUT "$UPLOAD_URL" \
-  -H "Content-Type: image/jpeg" \
-  --data-binary @hero-image.jpg
+verlynk posts:create -c "Caption" -i "<channel-id>" -d "2026-07-16T05:30:00.000Z" --timezone Asia/Calcutta
 ```
 
-Use the same `Content-Type` you sent in the presign request.
+Use the **profileId that owns the channel** (`accounts:list` → `profileId._id`). Wrong profile → clear `ChannelNotInProfile` error.
 
-### 3. Use `publicUrl` in `create-posts`
+---
 
-Pass the `publicUrl` from step 1 as `mediaUrl` in your MCP `create-posts` call:
+## Public API / CLI JSON shape
+
+After `media:upload` (or manual presign → PUT → complete):
 
 ```json
 {
   "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "text": "Check out our new hero image!",
+            "media": [
+              {
+                "mediaId": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                "fileType": "image",
+                "contentType": "image/jpeg"
+              }
+            ]
+          }
+        ]
+      },
+      "schedule": {
+        "type": "ONCE",
+        "details": {
+          "timezone": "Asia/Calcutta",
+          "utc": "2026-07-16T05:30:00.000Z"
+        }
+      }
+    }
+  ]
+}
+```
+
+```bash
+verlynk posts:create --json ./create-image-post-cli.json --profile-id YOUR_PROFILE_ID
+```
+
+### Presign → complete (curl)
+
+```bash
+# 1. Presign (returns mediaId)
+curl -s -X POST "https://verlynk.com/api/v1/media/presign?profileId=YOUR_PROFILE_ID" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"filename":"hero-image.jpg","contentType":"image/jpeg","size":2048576}'
+
+# Response includes: uploadUrl, publicUrl, key, type, mediaId
+
+# 2. PUT file
+curl -X PUT "$UPLOAD_URL" -H "Content-Type: image/jpeg" --data-binary @hero-image.jpg
+
+# 3. Complete (marks media ready for posts)
+curl -s -X POST "https://verlynk.com/api/v1/media/$MEDIA_ID/complete" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Field mapping
+
+| Presign / complete | CLI / Public API post media |
+| --- | --- |
+| `mediaId` | `mediaId` (required) |
+| `publicUrl` | optional `url` (server overwrites from DB) |
+| `key` | optional `objectKey` |
+| `type: image` | `fileType: image` |
+| `type: video` | `fileType: video` |
+| `type: document` | `fileType: application` |
+| MIME from request | `contentType` (use `image/jpeg` not `image/jpg` on posts) |
+
+---
+
+## MCP `create-posts` shape
+
+MCP media items use **only**:
+
+```json
+{ "mediaUrl": "https://cdn.verlynk.com/temp/.../hero-image.jpg", "mimeType": "image/jpeg" }
+```
+
+1. Upload with CLI/`presign`+`complete` (or use a public HTTPS URL / Google Drive link).
+2. Pass `publicUrl` as `mediaUrl`.
+3. Optional `profileId` on the tool call when the channel is not on the default profile.
+
+```json
+{
+  "action": "SCHEDULE",
+  "profileId": "OPTIONAL_NON_DEFAULT_PROFILE",
   "posts": [
     {
       "channelId": "YOUR_CHANNEL_ID",
@@ -88,19 +147,25 @@ Pass the `publicUrl` from step 1 as `mediaUrl` in your MCP `create-posts` call:
       },
       "schedule": {
         "type": "ONCE",
-        "details": {
-          "timezone": "UTC",
-          "utc": "2026-07-08T12:00:00.000Z"
-        }
+        "details": { "timezone": "UTC", "utc": "2026-07-08T12:00:00.000Z" }
       }
     }
   ]
 }
 ```
 
-## Supported content types
+---
 
-Allowed MIME types (from Verlynk Public API):
+## Authentication
+
+| Key | Scope | Used for |
+| --- | --- | --- |
+| MCP key | `mcp:access` | MCP tools |
+| Public API key | `posts:write` | Media presign, complete, CLI posts |
+
+Create keys in **Settings → Developer**. Presign needs a valid billing plan.
+
+## Supported content types
 
 | Category | MIME types |
 | --- | --- |
@@ -108,20 +173,11 @@ Allowed MIME types (from Verlynk Public API):
 | Videos | `video/mp4`, `video/mpeg`, `video/quicktime`, `video/avi`, `video/x-msvideo`, `video/webm`, `video/x-m4v` |
 | Documents | `application/pdf` |
 
-Maximum file size: **5 GB**. Presigned `uploadUrl` expires after **1 hour** (3600 seconds).
+Max size **5 GB**. Presigned `uploadUrl` expires in **1 hour**.
 
 ## Shell script
 
-A ready-to-use script is in [`examples/upload-media.sh`](./examples/upload-media.sh).
-
-## Alternative: external URLs
-
-`create-posts` also accepts:
-
-- Public HTTPS URLs to media files
-- Google Drive share links (converted server-side)
-
-For TikTok, Instagram, and YouTube, prefer presigned Verlynk URLs for reliability.
+[`examples/upload-media.sh`](./examples/upload-media.sh) — presign → PUT → complete; prints `mediaId` and `publicUrl`.
 
 ## Errors
 
@@ -129,12 +185,15 @@ For TikTok, Instagram, and YouTube, prefer presigned Verlynk URLs for reliabilit
 | --- | --- | --- |
 | 401 | `UNAUTHORIZED` | Invalid API key |
 | 403 | `API_KEY_SCOPE_DENIED` | Key lacks `posts:write` |
-| 400 | `BAD_REQUEST` | Missing filename/contentType, unsupported MIME type, or invalid billing plan |
-| 404 | `PROFILE_NOT_FOUND` | Invalid `profileId` query parameter |
+| 400 | `MEDIA_PRESIGN_PROFILE_REQUIRED` | Pass `profileId` when org has multiple profiles |
+| 400 | `MEDIA_COMPLETE_NOT_UPLOADED` | PUT the file before complete |
+| 400 | — | Missing filename/contentType, unsupported MIME, incomplete media on create |
+| 404 | `PROFILE_NOT_FOUND` / `MEDIA_NOT_FOUND` | Invalid profile or mediaId |
 | 429 | — | Rate limit exceeded |
 
 ## Related
 
+- [cli/README.md](./cli/README.md) — CLI commands
 - [MCP_TOOLS.md](./MCP_TOOLS.md) — `create-posts` reference
-- [examples/create-image-post workflow](./examples/EXAMPLES.md#image-post-with-media-upload)
-- [docs.verlynk.com](https://docs.verlynk.com) — full OpenAPI spec
+- [examples/EXAMPLES.md](./examples/EXAMPLES.md)
+- [docs.verlynk.com/api-reference](https://docs.verlynk.com/api-reference) — OpenAPI

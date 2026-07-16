@@ -1,144 +1,121 @@
 ---
 name: verlynk
-description: Schedule and manage social media posts via the Verlynk MCP server. Use when the user wants to list channels, create/schedule/publish posts, or view their Verlynk content calendar.
+description: Schedule and manage social media posts via the Verlynk CLI or MCP server. Use when the user wants to list channels, create/schedule/publish posts with or without images, or view their Verlynk content calendar.
 ---
 
-# Verlynk MCP Agent Skill
+# Verlynk Agent Skill
 
-Connect to Verlynk's hosted MCP server to manage social media posts across Facebook, Instagram, LinkedIn, X, YouTube, TikTok, Pinterest, Google Business, Mastodon, Bluesky, and Threads.
+Schedule social posts across Facebook, Instagram, LinkedIn, X, YouTube, TikTok, Pinterest, Google Business, Mastodon, Bluesky, and Threads.
+
+## Choose a path
+
+| Situation | Use |
+| --- | --- |
+| Local image/video files on disk (Claude Code) | **`verlynk`** — `media:upload` / `posts:create --media-file` |
+| Text-only or public image URLs via MCP client | **MCP** `create-posts` |
+| Non-default profile | CLI `--profile-id` **or** MCP `profileId` |
+
+**Media shapes differ — never mix:**
+
+| Path | Media fields |
+| --- | --- |
+| CLI / Public API | `{ mediaId, fileType, contentType }` |
+| MCP | `{ mediaUrl, mimeType }` |
+
+Full guide: [MEDIA.md](../../MEDIA.md)
 
 ## Prerequisites
 
-- Verlynk account with connected social channels
-- MCP token with `mcp:access` scope **or** OAuth session (ChatGPT/Cursor/Claude)
-- MCP server: `POST https://verlynk.com/api/public/mcp`
-- Auth header: `Authorization: Bearer YOUR_MCP_KEY`
+### CLI (recommended for files)
 
-Setup: [HOW_TO_CONNECT.md](../../HOW_TO_CONNECT.md) · Auth details: [AUTHENTICATION.md](../../AUTHENTICATION.md)
+```bash
+npm install -g verlynk
+export VERLYNK_API_KEY=verlynk_...   # posts:write
+verlynk profiles:list
+verlynk profiles:use <profile-id>
+verlynk accounts:list --json
+```
 
-## Available MCP tools
+### MCP
 
-| Tool | Purpose | Read-only |
-| --- | --- | --- |
-| `list-channels` | List connected social accounts | Yes |
-| `create-posts` | Create, schedule, publish, draft, or queue posts | No |
-| `get-posts` | List and filter posts by date, status, platform | Yes |
+- MCP token with `mcp:access` **or** OAuth
+- Server: `POST https://verlynk.com/api/public/mcp`
+- Optional: Public API key for uploading local files before MCP post
 
-Do **not** call tools not listed above. Only the three live tools are supported.
-
-## Workspace context
-
-MCP operates on the user's **default organization and default profile**. Agents cannot select a different profile via MCP. If the user has multiple profiles, ensure a default is set in the Verlynk app.
+Setup: [HOW_TO_CONNECT.md](../../HOW_TO_CONNECT.md)
 
 ## Discovery workflow
 
-### 1. Confirm MCP connection
+### 1. Resolve profile + channel
 
-Verify `list-channels`, `create-posts`, and `get-posts` are available.
-
-### 2. List channels
-
-```json
-{}
+```bash
+verlynk accounts:list --json
+# Note channel _id and profileId._id — they must match when posting
 ```
 
-From `structuredContent.channels[]`:
+Or MCP: `list-channels` (optionally `{ "profileId": "..." }`).
 
-| Field | Use |
-| --- | --- |
-| `channelId` | Pass to `create-posts` as `channelId` |
-| `platformName` | Determine platform-specific `metaData` fields |
-| `channelName` | Display to user |
+### 2. Text-only post (CLI)
 
-No server-side filters exist — filter client-side (e.g. `platformName === 'linkedin'`).
-
-### 3. Upload media (if needed)
-
-MCP has no upload tool. For local files or TikTok/Instagram/YouTube:
-
-1. `POST /v1/media/presign` with Public API key (`posts:write`)
-2. `PUT` file to `uploadUrl`
-3. Use `publicUrl` as `mediaUrl` in `create-posts`
-
-See [MEDIA.md](../../MEDIA.md).
-
-### 4. Create posts
-
-- `action`: `DRAFT` | `SCHEDULE` | `PUBLISH` | `QUEUE` | `NEEDS_APPROVAL`
-- `posts[]`: `{ channelId, postType, metaData, schedule }`
-
-Only include platform-specific `metaData` for the target `platformName`. See [PROVIDER_SETTINGS.md](../../PROVIDER_SETTINGS.md).
-
-**Safety:** `create-posts` publishes to real social accounts (`openWorldHint: true`). Confirm before `PUBLISH`/`SCHEDULE` unless the user explicitly requested it.
-
-### 5. Verify with get-posts
-
-For **scheduled, published, or queued** posts only (not drafts):
-
-```json
-{
-  "from": "2026-07-01",
-  "to": "2026-07-31",
-  "status": "SCHEDULED",
-  "view": "list"
-}
+```bash
+verlynk posts:create \
+  -c "Caption" \
+  -i "<channel-id>" \
+  -d "2026-07-16T05:30:00.000Z" \
+  --timezone Asia/Calcutta \
+  --profile-id "<profile-id>"
 ```
 
-> **Drafts:** `action: "DRAFT"` is not returned by `get-posts`. Confirm drafts in the Verlynk dashboard.
+### 3. Post with local image (CLI — preferred)
 
-## Tool quick reference
+```bash
+verlynk posts:create --media-file ~/Pictures/quote.png \
+  -c "Caption" \
+  -i "<channel-id>" \
+  -d "2026-07-16T05:30:00.000Z" \
+  --timezone Asia/Calcutta \
+  --profile-id "<profile-id>"
+```
 
-### list-channels
+Or two steps: `verlynk media:upload ./photo.png --json` then `--media-id` / `--json` with `mediaId`.
 
-- **Input:** `{}`
-- **Output:** `structuredContent.channels[]` — see [MCP_TOOLS.md#list-channels](../../MCP_TOOLS.md#list-channels)
+### 4. MCP create-posts
 
-### create-posts
+- Text: `media: []` or omit media
+- Image URL: `media: [{ "mediaUrl": "<cdn-or-https-url>", "mimeType": "image/png" }]`
+- Non-default profile: pass `profileId` on the tool call
 
-- **Schema:** [schemas/create-posts.input.json](../../schemas/create-posts.input.json)
-- **Schedule types:** `NOW`, `ONCE`, `DRAFT`, `QUEUE`, `RECURRING_WEEKLY`, `RECURRING_MONTHLY`, `RECURRING_CUSTOM`
-- **Examples:** [examples/](../../examples/)
+Confirm before `PUBLISH` / `SCHEDULE` unless the user explicitly asked.
 
-### get-posts
+### 5. Verify
 
-- **Schema:** [schemas/get-posts.input.json](../../schemas/get-posts.input.json)
-- **Required:** `from`, `to` (ISO 8601 or `YYYY-MM-DD`)
-- **Statuses:** `PROCESSING`, `FAILED`, `SCHEDULED`, `QUEUED`, `PUBLISHED`, `NEEDS_APPROVAL`
+```bash
+verlynk posts:list --from 2026-07-01 --to 2026-07-31 --status SCHEDULED
+```
 
-## Platform metadata (summary)
+Or MCP `get-posts`. Drafts are not returned by `get-posts` / may need the dashboard.
 
-| platformName | Key metaData fields |
+## MCP tools (if using MCP)
+
+| Tool | Purpose |
 | --- | --- |
-| `youtube` | `category`, `privacy`, `playlist`, `tags`, `madeForKids` |
-| `tiktok` | `privacy`, `disableComment`, `disableDuet`, `disableStitch` |
-| `x` | `replySettings`, `enableDirectMessaging` |
-| `pinterest` | `board`, `altText`, `dominantColor` |
-| `mastodon` | `visibility`, `isSensitive`, `spoilerText` |
+| `list-channels` | List connected accounts |
+| `create-posts` | Create / schedule / publish |
+| `get-posts` | List posts by date/status |
 
-`firstComment` is **not** supported on `mastodon`, `bluesky`, `threads`, `pinterest`.
+Schema: [schemas/create-posts.input.json](../../schemas/create-posts.input.json) (MCP media shape only).
 
 ## Error handling
 
 | Error | Action |
 | --- | --- |
-| `401` / `Missing bearer token` | Reconnect; check MCP key |
-| `API_KEY_SCOPE_DENIED` | Key needs `mcp:access` |
-| `MCP_RATE_LIMIT_EXCEEDED` | Back off 60 s |
-| `MCP_BURST_LIMIT_EXCEEDED` | Slow down; retry after 10 s |
-| `Missing required context` | Set default profile in Verlynk app |
-| `post.ScheduleFeature` | Free plan — use `NOW`/`ONCE`/`DRAFT` only |
-| `post.UserDoesNotHavePostPermission` | User lacks Create/Publish on channel |
-| Duplicate posts after retry | No server idempotency — see [OPERATIONS.md](../../OPERATIONS.md) |
-| Validation on `create-posts` | Verify `channelId`, schedule, platform fields |
-| Empty `get-posts` | Widen date range; check filters |
-
-## Not available via MCP
-
-- AI campaign scheduling, post analytics, channel connect, inbox, webhooks
-
-Use [docs.verlynk.com](https://docs.verlynk.com) Public API or the Verlynk dashboard for these.
+| `ChannelNotInProfile` | Use the `profileId` that owns the channel from `accounts:list` |
+| `Invalid mediaId` / `Media upload is not complete` | Run `media:upload` or `POST .../complete` before create |
+| `mediaUrl is not allowed` | You mixed MCP fields into CLI/Public API JSON — use `mediaId` |
+| `API_KEY_SCOPE_DENIED` | Need `posts:write` (CLI) or `mcp:access` (MCP) |
+| `MEDIA_PRESIGN_PROFILE_REQUIRED` | Pass `--profile-id` / `?profileId=` |
 
 ## Links
 
-- [MCP_TOOLS.md](../../MCP_TOOLS.md) · [AUTHENTICATION.md](../../AUTHENTICATION.md) · [SECURITY.md](../../SECURITY.md)
-- [OPERATIONS.md](../../OPERATIONS.md) · [FEATURES.md](../../FEATURES.md) · [examples/EXAMPLES.md](../../examples/EXAMPLES.md)
+- [cli/README.md](../../cli/README.md) · [MEDIA.md](../../MEDIA.md) · [MCP_TOOLS.md](../../MCP_TOOLS.md)
+- [examples/EXAMPLES.md](../../examples/EXAMPLES.md) · [AUTHENTICATION.md](../../AUTHENTICATION.md)

@@ -25,6 +25,7 @@ import {
   retryPost,
   updatePost,
 } from './commands/posts.js';
+import { uploadMedia } from './commands/media.js';
 
 yargs(hideBin(process.argv))
   .scriptName('verlynk')
@@ -436,6 +437,20 @@ yargs(hideBin(process.argv))
           describe: 'Platform-specific settings as JSON string',
           type: 'string',
         })
+        .option('media-file', {
+          describe:
+            'Comma-separated local file paths to upload and attach (Public API mediaId flow)',
+          type: 'string',
+        })
+        .option('media-id', {
+          describe:
+            'Comma-separated mediaIds from media:upload (already completed uploads)',
+          type: 'string',
+        })
+        .option('content-type', {
+          describe: 'MIME type when using --media-file or --media-id (e.g. image/png)',
+          type: 'string',
+        })
         .check((argv) => {
           if (!argv.json && !argv.content) {
             throw new Error('Either --content (-c) or --json is required');
@@ -457,10 +472,40 @@ yargs(hideBin(process.argv))
           'Publish immediately'
         )
         .example(
+          '$0 posts:create --media-file ./photo.png -c "Caption" -i "channel-uuid" -d "2026-07-10T09:00:00.000Z"',
+          'Schedule a post with a local image'
+        )
+        .example(
           '$0 posts:create --json ./post.json',
           'Create from JSON file'
         ),
     createPost as never
+  )
+  .command(
+    'media:upload <file>',
+    'Upload a local file via Public API presign and return mediaId',
+    (y: Argv) =>
+      y
+        .positional('file', {
+          describe: 'Path to image, video, or PDF',
+          type: 'string',
+          demandOption: true,
+        })
+        .option('content-type', {
+          describe: 'MIME type (inferred from extension if omitted)',
+          type: 'string',
+        })
+        .option('profile-id', {
+          describe: 'Profile (project) UUID',
+          type: 'string',
+        })
+        .option('json', {
+          describe: 'Output raw JSON',
+          type: 'boolean',
+          default: false,
+        })
+        .example('$0 media:upload ./photo.png --json', 'Upload and print mediaId/publicUrl'),
+    uploadMedia as never
   )
   .command(
     'posts:drafts',

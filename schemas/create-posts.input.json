@@ -10,6 +10,11 @@
       "enum": ["DRAFT", "SCHEDULE", "PUBLISH", "QUEUE", "NEEDS_APPROVAL"],
       "description": "Post action type"
     },
+    "profileId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Optional profile (project) ID when posting to a non-default profile. Must belong to your organization."
+    },
     "posts": {
       "type": "array",
       "minItems": 1,
@@ -21,7 +26,8 @@
       "properties": {
         "userId": { "type": "string" },
         "orgId": { "type": "string" },
-        "projectId": { "type": "string" }
+        "projectId": { "type": "string" },
+        "profileId": { "type": "string" }
       }
     }
   },

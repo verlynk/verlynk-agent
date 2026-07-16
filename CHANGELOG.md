@@ -2,6 +2,24 @@
 
 All notable changes to this documentation repo are listed here.
 
+## [1.4.0] - 2026-07-16
+
+### Changed
+
+- npm package renamed from `@verlynk/cli` to `verlynk` (`npm install -g verlynk`)
+
+### Added
+
+- CLI `media:upload` and `posts:create --media-file` / `--media-id` for local image publishing
+- Agent-first media docs: CLI vs MCP shapes in [MEDIA.md](./MEDIA.md), [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md)
+- [`examples/create-image-post-cli.json`](./examples/create-image-post-cli.json) and [`schemas/public-api-post.media.json`](./schemas/public-api-post.media.json)
+- Upload script completes media and returns `mediaId`
+
+### Fixed
+
+- Documented that Public API posts require `mediaId` (not MCP `mediaUrl`/`mimeType`)
+- Broken `/api` → `/api-reference` links
+
 ## [1.3.0] - 2026-07-07
 
 ### Added

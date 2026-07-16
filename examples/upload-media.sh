@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
-# Upload a media file to Verlynk via Public API presign.
+# Upload a media file to Verlynk via Public API presign + complete.
 # Usage: ./upload-media.sh <file-path> [profile-id]
 #
 # Requires:
 #   VERLYNK_API_KEY — Public API key with posts:write scope
 #   VERLYNK_API_URL — optional, defaults to https://verlynk.com/api
 #   jq, curl
+#
+# Output JSON includes mediaId (for CLI/Public API posts) and publicUrl (for MCP mediaUrl).
+# Presign type "document" maps to post fileType "application".
 
 set -euo pipefail
 
@@ -29,7 +32,7 @@ FILENAME="$(basename "$FILE_PATH")"
 FILE_SIZE="$(wc -c < "$FILE_PATH" | tr -d ' ')"
 
 case "${FILENAME##*.}" in
-  jpg)      CONTENT_TYPE="image/jpg" ;;
+  jpg)      CONTENT_TYPE="image/jpeg" ;;
   jpeg)     CONTENT_TYPE="image/jpeg" ;;
   png)      CONTENT_TYPE="image/png" ;;
   gif)      CONTENT_TYPE="image/gif" ;;
@@ -37,7 +40,7 @@ case "${FILENAME##*.}" in
   mp4)      CONTENT_TYPE="video/mp4" ;;
   mpeg|mpg) CONTENT_TYPE="video/mpeg" ;;
   mov)      CONTENT_TYPE="video/quicktime" ;;
-  avi)      CONTENT_TYPE="video/avi" ;;
+  avi)      CONTENT_TYPE="video/x-msvideo" ;;
   webm)     CONTENT_TYPE="video/webm" ;;
   m4v)      CONTENT_TYPE="video/x-m4v" ;;
   pdf)      CONTENT_TYPE="application/pdf" ;;
@@ -61,10 +64,16 @@ PRESIGN_RESPONSE="$(curl -sf -X POST "${API_URL}/v1/media/presign${QUERY}" \
   -d "{\"filename\":\"${FILENAME}\",\"contentType\":\"${CONTENT_TYPE}\",\"size\":${FILE_SIZE}}")"
 
 UPLOAD_URL="$(echo "$PRESIGN_RESPONSE" | jq -r '.uploadUrl // empty')"
-PUBLIC_URL="$(echo "$PRESIGN_RESPONSE" | jq -r '.publicUrl // empty')"
+MEDIA_ID="$(echo "$PRESIGN_RESPONSE" | jq -r '.mediaId // empty')"
 
 if [[ -z "$UPLOAD_URL" || "$UPLOAD_URL" == "null" ]]; then
   echo "Error: presign failed:" >&2
+  echo "$PRESIGN_RESPONSE" | jq . >&2
+  exit 1
+fi
+
+if [[ -z "$MEDIA_ID" || "$MEDIA_ID" == "null" ]]; then
+  echo "Error: presign response missing mediaId" >&2
   echo "$PRESIGN_RESPONSE" | jq . >&2
   exit 1
 fi
@@ -79,5 +88,12 @@ if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
   exit 1
 fi
 
+echo "Completing upload (mediaId=$MEDIA_ID)..." >&2
+COMPLETE_RESPONSE="$(curl -sf -X POST "${API_URL}/v1/media/${MEDIA_ID}/complete" \
+  -H "Authorization: Bearer ${API_KEY}")"
+
 echo "Upload complete." >&2
-echo "$PRESIGN_RESPONSE" | jq '{publicUrl, key, type}'
+echo "$COMPLETE_RESPONSE" | jq '{mediaId, publicUrl, key, type, status, contentType: "'"$CONTENT_TYPE"'"}'
+echo "" >&2
+echo "CLI/API post media: { mediaId, fileType: (document→application), contentType }" >&2
+echo "MCP create-posts media: { mediaUrl: publicUrl, mimeType: contentType }" >&2

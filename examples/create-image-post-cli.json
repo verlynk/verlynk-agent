@@ -1,0 +1,30 @@
+{
+  "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "text": "The only way to do great work is to love what you do. — Steve Jobs",
+            "media": [
+              {
+                "mediaId": "YOUR_MEDIA_ID_FROM_MEDIA_UPLOAD",
+                "fileType": "image",
+                "contentType": "image/png"
+              }
+            ]
+          }
+        ]
+      },
+      "schedule": {
+        "type": "ONCE",
+        "details": {
+          "timezone": "Asia/Calcutta",
+          "utc": "2026-07-16T05:30:00.000Z"
+        }
+      }
+    }
+  ]
+}

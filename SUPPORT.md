@@ -5,7 +5,7 @@
 | Resource | URL |
 | --- | --- |
 | Developer docs | [docs.verlynk.com](https://docs.verlynk.com) |
-| API reference (OpenAPI) | [docs.verlynk.com/api](https://docs.verlynk.com/api) |
+| API reference (OpenAPI) | [docs.verlynk.com/api-reference](https://docs.verlynk.com/api-reference) |
 | MCP setup guides | [docs.verlynk.com/integrations/claude](https://docs.verlynk.com/integrations/claude) |
 | This repo | [github.com/verlynk/verlynk-agent](https://github.com/verlynk/verlynk-agent) |
 

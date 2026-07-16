@@ -1,6 +1,6 @@
 {
-  "name": "@verlynk/cli",
-  "version": "1.0.0",
+  "name": "verlynk",
+  "version": "1.0.1",
   "description": "CLI for Verlynk — schedule and manage social media posts",
   "publishConfig": {
     "access": "public"
@@ -13,7 +13,7 @@
     "build": "tsup",
     "dev": "tsx src/index.ts",
     "prepublishOnly": "npm run build",
-    "publish": "tsup && npm publish --access public"
+    "release": "npm publish --access public"
   },
   "files": [
     "dist",

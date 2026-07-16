@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verlynk.com/schemas/public-api-post.media.json",
+  "title": "Public API / CLI post media item",
+  "description": "Media object for POST /v1/posts and verlynk posts:create --json. Do NOT use mediaUrl/mimeType here (those are MCP-only).",
+  "type": "object",
+  "required": ["mediaId", "fileType", "contentType"],
+  "additionalProperties": true,
+  "properties": {
+    "mediaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "From POST /v1/media/presign (then complete) or verlynk media:upload"
+    },
+    "fileType": {
+      "type": "string",
+      "enum": ["image", "video", "application", "text"],
+      "description": "Map presign type document → application"
+    },
+    "contentType": {
+      "type": "string",
+      "description": "MIME type, e.g. image/png, image/jpeg, video/mp4"
+    },
+    "url": { "type": "string", "format": "uri" },
+    "objectKey": { "type": "string" }
+  }
+}

@@ -114,13 +114,19 @@
       "enum": ["day", "week", "month", "list"],
       "default": "list"
     },
+    "profileId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Optional profile (project) ID when listing posts for a non-default profile."
+    },
     "_context": {
       "type": "object",
       "description": "Auto-populated by server. Do not pass manually.",
       "properties": {
         "userId": { "type": "string" },
         "orgId": { "type": "string" },
-        "projectId": { "type": "string" }
+        "projectId": { "type": "string" },
+        "profileId": { "type": "string" }
       }
     }
   }

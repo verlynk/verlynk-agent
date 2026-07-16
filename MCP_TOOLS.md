@@ -160,6 +160,8 @@ JSON schema: [`schemas/create-posts.input.json`](./schemas/create-posts.input.js
 
 #### Media handling
 
+> **MCP-only shape:** `{ mediaUrl, mimeType }`. This is **not** the Public API / CLI media object (`mediaId` / `fileType` / `contentType`). See [MEDIA.md](./MEDIA.md).
+
 The server downloads `mediaUrl`, stores media in Verlynk S3, and validates per channel. Supported sources:
 
 - `publicUrl` from [media presign](./MEDIA.md) (recommended for TikTok, Instagram, YouTube)
@@ -295,7 +297,7 @@ Each item in `structuredContent.posts[]` includes:
 | `createdAt` | string (ISO 8601) | Creation timestamp |
 | `errorMessage` | string | Present when `postStatus` is `FAILED` |
 
-Full response shape: [docs.verlynk.com/api](https://docs.verlynk.com/api)
+Full response shape: [docs.verlynk.com/api-reference](https://docs.verlynk.com/api-reference)
 
 ### Example
 

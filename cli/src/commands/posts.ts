@@ -1,7 +1,8 @@
 import { readFileSync } from 'fs';
 import { getAPI, resolveProfileId } from '../config.js';
 import { fail, requireYes, truncate } from '../cli.js';
-import type { CreatePostsData, EditPostRequest, Post, PostInput } from '../api.js';
+import type { CreatePostsData, EditPostRequest, Post, PostInput, PostMediaItem } from '../api.js';
+import { toPostMediaItem, uploadMediaFile } from './media.js';
 
 function getPostText(post: Post): string {
   const contents = post.metaData?.contents;
@@ -109,6 +110,9 @@ export async function createPost(argv: {
   'profile-id'?: string;
   json?: string;
   settings?: string;
+  'media-file'?: string;
+  'media-id'?: string;
+  'content-type'?: string;
 }) {
   const api = getAPI();
   const profileId = await resolveProfileId(argv['profile-id']);
@@ -185,11 +189,40 @@ export async function createPost(argv: {
       }
     }
 
+    const media: PostMediaItem[] = [];
+
+    if (argv['media-file']) {
+      const files = argv['media-file'].split(',').map((f) => f.trim()).filter(Boolean);
+      for (const filePath of files) {
+        const uploaded = await uploadMediaFile(filePath, {
+          contentType: argv['content-type'],
+          profileId,
+        });
+        media.push(toPostMediaItem(uploaded));
+      }
+    }
+
+    if (argv['media-id']) {
+      const ids = argv['media-id'].split(',').map((id) => id.trim()).filter(Boolean);
+      for (const mediaId of ids) {
+        // Caller must have completed upload; fileType/contentType required by API.
+        // Prefer --media-file for local files. For media-id alone, default to image/png
+        // unless --content-type is set.
+        const contentType = (argv['content-type'] || 'image/png').toLowerCase();
+        const fileType = contentType.startsWith('video/')
+          ? 'video'
+          : contentType === 'application/pdf'
+            ? 'application'
+            : 'image';
+        media.push({ mediaId, fileType, contentType });
+      }
+    }
+
     const posts: PostInput[] = channelIds.map((channelId) => ({
       channelId,
       postType,
       metaData: {
-        contents: [{ text: contents[0], media: [] }],
+        contents: [{ text: contents[0], media }],
         ...platformSettings,
       },
       schedule: {

@@ -174,6 +174,14 @@ export interface UsageStatsResponse {
   lastPaymentMethod?: unknown;
 }
 
+export interface PostMediaItem {
+  mediaId: string;
+  fileType: string;
+  contentType: string;
+  objectKey?: string;
+  url?: string;
+}
+
 export interface PostInput {
   channelId: string;
   postType: string;
@@ -181,7 +189,7 @@ export interface PostInput {
     contents: Array<{
       title?: string;
       text?: string;
-      media?: Array<{ mediaId?: string; objectKey?: string; fileType: string; contentType: string; url?: string }>;
+      media?: PostMediaItem[];
     }>;
     [key: string]: unknown;
   };
@@ -189,6 +197,28 @@ export interface PostInput {
     type: string;
     details: Record<string, unknown>;
   };
+}
+
+export interface MediaPresignRequest {
+  filename: string;
+  contentType: string;
+  size?: number;
+}
+
+export interface MediaPresignResponse {
+  uploadUrl: string;
+  publicUrl: string;
+  key: string;
+  type: 'image' | 'video' | 'document';
+  mediaId: string;
+}
+
+export interface MediaCompleteResponse {
+  mediaId: string;
+  publicUrl: string;
+  key: string;
+  type: 'image' | 'video' | 'document';
+  status: 'complete';
 }
 
 export class VerlynkAPI {
@@ -306,6 +336,33 @@ export class VerlynkAPI {
       body: data,
       params: profileId ? { profileId } : undefined,
     });
+  }
+
+  presignMedia(body: MediaPresignRequest, profileId?: string) {
+    return this.request<MediaPresignResponse>('/v1/media/presign', {
+      method: 'POST',
+      body,
+      params: profileId ? { profileId } : undefined,
+    });
+  }
+
+  completeMedia(mediaId: string) {
+    return this.request<MediaCompleteResponse>(`/v1/media/${mediaId}/complete`, {
+      method: 'POST',
+    });
+  }
+
+  /** PUT file bytes to a presigned S3 URL (no Verlynk auth header). */
+  async putPresignedUpload(uploadUrl: string, fileBytes: Buffer, contentType: string) {
+    const res = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
+      body: new Uint8Array(fileBytes),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Upload PUT failed (HTTP ${res.status}): ${text || res.statusText}`);
+    }
   }
 
   getPost(postId: string, profileId?: string) {

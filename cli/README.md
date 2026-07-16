@@ -11,9 +11,9 @@ Requirements: **Node.js 18+**
 ## Installation
 
 ```bash
-npm install -g @verlynk/cli
+npm install -g verlynk
 # or
-pnpm install -g @verlynk/cli
+pnpm install -g verlynk
 
 verlynk --version
 ```
@@ -223,7 +223,38 @@ Rate limits: **120 req/min**, burst **30 / 10s**. See [Rate Limits](https://docs
 
 ## Media Upload
 
-Media upload is not a CLI command. Use the Public API presign endpoint, then pass the URL in your post JSON. Guide: [Media upload](https://github.com/verlynk/verlynk-agent/blob/main/MEDIA.md).
+Upload local files, then attach them to posts. **Do not** use MCP fields (`mediaUrl` / `mimeType`) in CLI JSON — those are MCP-only.
+
+```bash
+# Upload and print mediaId
+verlynk media:upload ./photo.png --json
+
+# One-shot: upload + schedule
+verlynk posts:create --media-file ./photo.png \
+  -c "Caption" -i "<channel-id>" -d "2026-07-16T05:30:00.000Z" --timezone Asia/Calcutta
+
+# Or attach a completed mediaId
+verlynk posts:create --media-id "<uuid>" --content-type image/png \
+  -c "Caption" -i "<channel-id>" -d "2026-07-16T05:30:00.000Z"
+```
+
+Public API media object shape for `--json` payloads:
+
+```json
+{
+  "mediaId": "<from media:upload>",
+  "fileType": "image",
+  "contentType": "image/png"
+}
+```
+
+| Presign `type` | Post `fileType` |
+| --- | --- |
+| `image` | `image` |
+| `video` | `video` |
+| `document` | `application` |
+
+Requires a Public API key with `posts:write`. Guide: [MEDIA.md](../MEDIA.md).
 
 ---
 
@@ -243,6 +274,8 @@ verlynk accounts:list --json
 # Posts
 verlynk posts:create -c "text" -i "id" -d "2026-07-15T09:00:00.000Z"
 verlynk posts:create -c "text" -i "id" -t publish
+verlynk media:upload ./photo.png --json
+verlynk posts:create --media-file ./photo.png -c "Caption" -i "id" -d "2026-07-15T09:00:00.000Z"
 verlynk posts:create --json file.json
 verlynk posts:list --from 2026-07-01 --to 2026-07-31
 verlynk validate -t "text"
