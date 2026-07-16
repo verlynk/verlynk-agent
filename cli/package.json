@@ -1,6 +1,6 @@
 {
   "name": "verlynk",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "CLI for Verlynk — schedule and manage social media posts",
   "publishConfig": {
     "access": "public"

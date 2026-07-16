@@ -2,6 +2,13 @@
 
 All notable changes to this documentation repo are listed here.
 
+## [1.4.1] - 2026-07-16
+
+### Changed
+
+- npm CLI package bumped to **`verlynk@1.1.0`** (upgrade nudge; media already shipped in 1.0.1 under the `verlynk` name)
+- Clarified that deprecated `@verlynk/cli@1.0.0` lacks `media:upload` — install `verlynk` instead
+
 ## [1.4.0] - 2026-07-16
 
 ### Changed
