@@ -109,16 +109,24 @@ Creating posts requires the authenticated user to have:
 
 ---
 
-## Public API key (media upload only)
+## Public API key (CLI and media)
 
-Media presign (`POST /v1/media/presign`) requires a **separate** Public API key with `posts:write` — not the MCP key.
+Public API endpoints (`/api/v1/*`) require a **separate** Public API key — not the MCP key.
 
-| Key | Scope | Endpoint |
+| Key | Scope / permission | Used for |
 | --- | --- | --- |
 | MCP key | `mcp:access` | `/api/public/mcp` |
-| Public API key | `posts:write` | `/api/v1/media/presign` |
+| Public API key | `read` or `read-write` | CLI + Public API (`/api/v1/*`) |
 
-See [MEDIA.md](./MEDIA.md).
+`read` grants all `:read` scopes (including `inbox:read`, `posts:read`, …). `read-write` grants all scopes except `mcp:access` (including `inbox:write`, `posts:write`).
+
+| Capability | Typical scopes |
+| --- | --- |
+| Media upload / posts | `posts:write` |
+| Inbox list | `inbox:read` |
+| Inbox reply / status | `inbox:write` |
+
+Inbox is **CLI + Public API only** — not available via MCP. See [docs.verlynk.com/cli/inbox](https://docs.verlynk.com/cli/inbox) and [MEDIA.md](./MEDIA.md).
 
 ---
 

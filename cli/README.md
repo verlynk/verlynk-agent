@@ -230,6 +230,7 @@ verlynk usage
 | `API_KEY_SCOPE_DENIED` | Key is missing the required scope |
 | `INVALID_PLAN` on analytics | Plan does not include that feature |
 | `REPLY_NOT_SUPPORTED` on `inbox:reply` | Item is a `REPLY` or has no linked post — reply to the top-level comment instead |
+| `BAD_REQUEST` on inbox commands | Empty `--message`, invalid dates, or range over 40 days |
 
 Rate limits: **120 req/min**, burst **30 / 10s**. See [Rate Limits](https://docs.verlynk.com/reference/rate-limits).
 

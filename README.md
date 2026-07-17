@@ -53,7 +53,7 @@ verlynk posts:create --media-file ./photo.png -c "Caption" -i "<channel-id>" -d 
 | Surface | Tools / commands |
 | --- | --- |
 | MCP | `list-channels`, `create-posts`, `get-posts` |
-| CLI | `accounts:*`, `posts:*`, `media:upload`, `profiles:*`, … |
+| CLI | `accounts:*`, `posts:*`, `media:upload`, `inbox:list`\|`reply`\|`status`, `profiles:*`, … |
 
 See [FEATURES.md](./FEATURES.md) and [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md).
 
@@ -80,7 +80,7 @@ See [FEATURES.md](./FEATURES.md) and [skills/verlynk/SKILL.md](./skills/verlynk/
 | Key | Scope | Used for |
 | --- | --- | --- |
 | MCP key | `mcp:access` | MCP tools |
-| Public API key | `posts:write` | CLI, media presign/complete, posts |
+| Public API key | `read` / `read-write` (e.g. `posts:write`, `inbox:read`/`inbox:write`) | CLI, media, posts, inbox |
 
 ## Repository structure
 
