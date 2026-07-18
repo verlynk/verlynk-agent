@@ -10,6 +10,8 @@ Agent documentation, skills, and the **`verlynk`** package — schedule and mana
 | --- | --- |
 | MCP server | `POST https://verlynk.com/api/public/mcp` |
 | CLI | [`cli/README.md`](./cli/README.md) — `npm install -g verlynk` |
+| npm | [npmjs.com/package/verlynk](https://www.npmjs.com/package/verlynk) |
+| GitHub | [github.com/verlynk/verlynk-agent](https://github.com/verlynk/verlynk-agent) |
 | Developer docs | [docs.verlynk.com](https://docs.verlynk.com) |
 | Create MCP token | [Create MCP Token guide](https://docs.verlynk.com/getting-started/create-mcp-token) |
 | Public API | [OpenAPI reference](https://docs.verlynk.com/api-reference) |

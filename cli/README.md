@@ -6,6 +6,11 @@ The Verlynk CLI provides a command-line interface to the [Verlynk Public API](ht
 
 Requirements: **Node.js 18+**
 
+## Links
+
+- **npm:** [npmjs.com/package/verlynk](https://www.npmjs.com/package/verlynk)
+- **GitHub:** [github.com/verlynk/verlynk-agent](https://github.com/verlynk/verlynk-agent)
+
 ---
 
 ## Installation

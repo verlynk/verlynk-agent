@@ -5,6 +5,14 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/verlynk/verlynk-agent.git"
+  },
+  "homepage": "https://github.com/verlynk/verlynk-agent#readme",
+  "bugs": {
+    "url": "https://github.com/verlynk/verlynk-agent/issues"
+  },
   "main": "dist/index.js",
   "bin": {
     "verlynk": "dist/index.js"
