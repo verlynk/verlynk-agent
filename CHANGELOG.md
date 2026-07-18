@@ -2,6 +2,20 @@
 
 All notable changes to this documentation repo are listed here.
 
+## [1.6.0] - 2026-07-18
+
+### Added
+
+- Full post lifecycle docs for agents: draft, queue, recurring, needs-approval, edit, delete, retry
+- Example payloads: `create-queue-post.json`, `create-recurring-*.json`, `create-needs-approval-post.json`, `create-publish-now-post.json`, `update-scheduled-post.json`, `update-draft-to-schedule.json`
+- Docs site: expanded [CLI Posts](https://docs.verlynk.com/cli/posts) / Drafts, prompt examples, OpenAPI edit/delete/create narratives
+
+### Fixed
+
+- MCP **does** honor optional tool `profileId` — corrected [AUTHENTICATION.md](./AUTHENTICATION.md), [FEATURES.md](./FEATURES.md), [OPERATIONS.md](./OPERATIONS.md), skill
+- Documented soft `SCHEDULE` × schedule-type pairing (202 with zero posts) and MCP `NEEDS_APPROVAL` limitation (no `workflowId`)
+- Clarified edit/delete status matrices and published platform limits
+
 ## [1.5.0] - 2026-07-16
 
 ### Added

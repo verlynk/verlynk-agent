@@ -15,7 +15,7 @@ Detailed guide: [docs.verlynk.com/getting-started/create-mcp-token](https://docs
 
 ## Step 2: Set your default profile (multi-profile orgs)
 
-If your organization has more than one profile, set a **default profile** in the Verlynk app. MCP tools always operate on the default profile — they cannot target a different profile.
+If your organization has more than one profile, pass optional tool argument **`profileId`** (UUID of a profile in your org), or set a default profile in the Verlynk app when omitting it.
 
 ## Step 3: Connect your MCP client
 

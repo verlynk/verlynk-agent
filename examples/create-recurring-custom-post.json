@@ -1,0 +1,29 @@
+{
+  "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Custom recurring dates — campaign milestones.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "RECURRING_CUSTOM",
+        "details": {
+          "timezone": "UTC",
+          "utc": [
+            "2026-07-25T15:00:00.000Z",
+            "2026-08-01T15:00:00.000Z",
+            "2026-08-15T15:00:00.000Z"
+          ]
+        }
+      }
+    }
+  ]
+}

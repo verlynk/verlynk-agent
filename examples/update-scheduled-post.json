@@ -1,0 +1,23 @@
+{
+  "action": "SCHEDULE",
+  "post": {
+    "channelId": "YOUR_CHANNEL_ID",
+    "postType": "post",
+    "metaData": {
+      "contents": [
+        {
+          "title": "",
+          "text": "Updated caption for a scheduled post.",
+          "media": []
+        }
+      ]
+    },
+    "schedule": {
+      "type": "ONCE",
+      "details": {
+        "timezone": "Asia/Kolkata",
+        "utc": "2026-07-20T09:00:00.000Z"
+      }
+    }
+  }
+}

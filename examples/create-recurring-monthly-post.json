@@ -1,0 +1,27 @@
+{
+  "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Monthly recap — first of the month.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "RECURRING_MONTHLY",
+        "details": {
+          "timezone": "UTC",
+          "dayOfMonth": 1,
+          "utcStartDate": "2026-08-01T12:00:00.000Z",
+          "utcEndDate": "2027-01-01T12:00:00.000Z"
+        }
+      }
+    }
+  ]
+}

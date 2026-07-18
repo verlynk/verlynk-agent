@@ -25,7 +25,7 @@ If context resolution fails:
 | `User does not have default organization or project set` | Set a default profile in the Verlynk app |
 | `API key org does not match user default organization` | MCP key org ≠ user's default org |
 
-See [AUTHENTICATION.md#workspace-context-default-profile](./AUTHENTICATION.md#workspace-context-default-profile).
+See [AUTHENTICATION.md#workspace-context-profiles](./AUTHENTICATION.md#workspace-context-profiles).
 
 ---
 
@@ -50,7 +50,7 @@ JSON schema: [`schemas/list-channels.input.json`](./schemas/list-channels.input.
 {}
 ```
 
-No filter parameters (`platform`, `query`, etc.) are supported. Filter the response client-side after fetching.
+No filter parameters such as `platform` or `query` are supported (filter client-side). Optional tool arg **`profileId`** selects which profile’s channels to list (same org). See [AUTHENTICATION.md](./AUTHENTICATION.md).
 
 ### Response
 
@@ -113,12 +113,14 @@ The authenticated user must have **Create** and **Publish** (or **Needs approval
 | `action` | `schedule.type` | Outcome |
 | --- | --- | --- |
 | `DRAFT` | `DRAFT` | Saved to draft store — **not** in `get-posts` |
-| `PUBLISH` | `NOW` | Published immediately |
-| `SCHEDULE` | `ONCE` / `RECURRING_*` | Scheduled post — visible in `get-posts` |
-| `QUEUE` | `QUEUE` | Added to queue |
-| `NEEDS_APPROVAL` | Per workflow | Submitted for approval workflow |
+| `PUBLISH` | Prefer `NOW` | Published immediately (other schedule types ignored) |
+| `SCHEDULE` | `ONCE` / `RECURRING_*` | Scheduled — visible in `get-posts`. **Do not** use `SCHEDULE`+`NOW` (can accept with 0 posts). |
+| `QUEUE` | `QUEUE` + `queueType` `NEXT`\|`LAST` | Queued (paid + queue enabled) |
+| `NEEDS_APPROVAL` | `ONCE` / `QUEUE` / `RECURRING_*` | **Not usable via MCP** — MCP does not accept `workflowId`. Use CLI/Public API with `workflowId`. |
 
-See [PROVIDER_SETTINGS.md#action-and-schedule-pairing](./PROVIDER_SETTINGS.md#action-and-schedule-pairing) and [OPERATIONS.md](./OPERATIONS.md).
+See [PROVIDER_SETTINGS.md#action-and-schedule-pairing](./PROVIDER_SETTINGS.md#action-and-schedule-pairing), [OPERATIONS.md](./OPERATIONS.md), and [examples/](./examples/).
+
+**MCP has no update / delete / retry / draft-list tools** — use the CLI (`posts:update`, `posts:delete`, `posts:retry`, `posts:drafts`).
 
 ### Annotations
 
@@ -140,6 +142,7 @@ JSON schema: [`schemas/create-posts.input.json`](./schemas/create-posts.input.js
 | --- | --- | --- | --- |
 | `action` | string | Yes | `DRAFT`, `SCHEDULE`, `PUBLISH`, `QUEUE`, or `NEEDS_APPROVAL` |
 | `posts` | array | Yes | One or more post objects |
+| `profileId` | string (UUID) | No | Target profile in the same org (see [AUTHENTICATION.md](./AUTHENTICATION.md)) |
 
 #### Post object (`posts[]`)
 
@@ -200,9 +203,12 @@ Platform-specific `metaData` fields: [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.
 
 ### Example
 
+Full worked payloads (queue, recurring, publish now): [examples/](./examples/).
+
 ```json
 {
   "action": "SCHEDULE",
+  "profileId": "optional-profile-uuid",
   "posts": [
     {
       "channelId": "550e8400-e29b-41d4-a716-446655440000",

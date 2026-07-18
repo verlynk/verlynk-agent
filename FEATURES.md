@@ -20,7 +20,7 @@ Server: `https://verlynk.com/api/public/mcp`
 
 Auth: API key with `mcp:access` scope **or** OAuth JWT (ChatGPT, Cursor, Claude)
 
-Context: operates on the user's **default profile** only — see [AUTHENTICATION.md](./AUTHENTICATION.md)
+Context: default org; optional tool `profileId` switches profile within that org — see [AUTHENTICATION.md](./AUTHENTICATION.md)
 
 ---
 
@@ -28,12 +28,14 @@ Context: operates on the user's **default profile** only — see [AUTHENTICATION
 
 | Limitation | Detail |
 | --- | --- |
-| Default profile only | MCP cannot target a non-default profile |
-| Drafts not in `get-posts` | `action: "DRAFT"` saves to draft store — use dashboard to verify |
+| Default profile | Optional — pass tool `profileId` for another profile in the same org |
+| Drafts not in `get-posts` | `action: "DRAFT"` saves to draft store — use dashboard or CLI `posts:drafts` to verify |
 | `get-posts` date filter | Filters on `publishAt`, not `createdAt` |
 | No idempotency | Duplicate `create-posts` calls create duplicate posts |
 | Channel permissions | User must have Create + Publish on the channel |
 | Free plan scheduling | Only `NOW`, `ONCE`, `DRAFT` schedule types |
+| MCP no update/delete | Use Public API / CLI for edit, delete, retry, drafts |
+| MCP `NEEDS_APPROVAL` | MCP does not accept `workflowId` — use CLI/Public API for approval |
 
 Details: [OPERATIONS.md](./OPERATIONS.md)
 

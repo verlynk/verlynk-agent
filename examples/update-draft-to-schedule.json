@@ -1,0 +1,25 @@
+{
+  "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Promoting this draft to a one-time schedule.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "ONCE",
+        "details": {
+          "timezone": "UTC",
+          "utc": "2026-07-22T16:00:00.000Z"
+        }
+      }
+    }
+  ]
+}

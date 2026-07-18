@@ -1,142 +1,154 @@
 ---
 name: verlynk
-description: Schedule and manage social media posts, and list/reply/triage inbox comments, via the Verlynk CLI or MCP server. Use when the user wants to list channels, create/schedule/publish posts with or without images, view their Verlynk content calendar, or handle inbox comments.
+description: >-
+  Schedule and manage social media posts, upload local media, list/reply/triage
+  inbox comments, and pull analytics via the Verlynk CLI (`verlynk`) or MCP
+  server. Use when the user wants to list channels, create/schedule/publish/queue
+  posts (draft, once, recurring, approval), update/retry/delete posts, view a
+  content calendar, validate captions, handle inbox comments, or check analytics.
 ---
 
 # Verlynk Agent Skill
 
-Schedule social posts across Facebook, Instagram, LinkedIn, X, YouTube, TikTok, Pinterest, Google Business, Mastodon, Bluesky, and Threads. List, reply to, and triage inbox comments via the CLI (not MCP).
+Schedule social posts across Facebook, Instagram, LinkedIn, X, YouTube, TikTok, Pinterest, Google Business, Mastodon, Bluesky, and Threads. List, reply to, and triage inbox comments via the **CLI** (not MCP).
+
+## Install & links
+
+```bash
+npx skills add verlynk/verlynk-agent
+npm install -g verlynk   # Node 18+ — NOT deprecated @verlynk/cli
+```
+
+| Resource | URL |
+| --- | --- |
+| npm | https://www.npmjs.com/package/verlynk |
+| GitHub | https://github.com/verlynk/verlynk-agent |
+| Docs | https://docs.verlynk.com |
+| CLI posts | https://docs.verlynk.com/cli/posts |
+| Examples | https://github.com/verlynk/verlynk-agent/tree/main/examples |
+
+Verify: `verlynk --help` lists `media:upload`.
 
 ## Choose a path
 
 | Situation | Use |
 | --- | --- |
-| Local image/video files on disk (Claude Code) | **`verlynk`** — `media:upload` / `posts:create --media-file` |
-| Text-only or public image URLs via MCP client | **MCP** `create-posts` |
-| Inbox comments (list / reply / status) | **CLI only** — `inbox:list` / `inbox:reply` / `inbox:status` |
-| Non-default profile | CLI `--profile-id` **or** MCP `profileId` |
+| Local image/video on disk | **CLI** — `media:upload` / `posts:create --media-file` |
+| Text or public image URLs in MCP | **MCP** `create-posts` |
+| Inbox / analytics / validate | **CLI** |
+| Edit / delete / retry / drafts list | **CLI** (MCP has no these tools) |
+| Queue / recurring / approval (`workflowId`) | **CLI** `--json` (approval **not** via MCP) |
+| Non-default profile | CLI `--profile-id` **or** MCP tool arg `profileId` (same org) |
 
-**Media shapes differ — never mix:**
+**Media shapes — never mix:**
 
-| Path | Media fields |
+| Path | Fields |
 | --- | --- |
 | CLI / Public API | `{ mediaId, fileType, contentType }` |
 | MCP | `{ mediaUrl, mimeType }` |
 
-Full guide: [MEDIA.md](../../MEDIA.md)
+## Auth
 
-## Prerequisites
+| Surface | Credential |
+| --- | --- |
+| CLI / Public API | Public API key — `verlynk auth:login --key …` (preferred) or `VERLYNK_API_KEY` |
+| MCP | MCP token (`mcp:access`) or OAuth |
 
-### CLI (recommended for files and inbox)
+Keys are not interchangeable.
+
+## Create — pick `action` + `schedule.type`
+
+**Wrong pairs can return HTTP 202 with zero posts.** Always verify with `posts:list` / `get-posts`.
+
+| Goal | `action` | `schedule.type` | How |
+| --- | --- | --- | --- |
+| Draft | `DRAFT` | `DRAFT` | CLI `-t draft` or `--json` |
+| Publish now | `PUBLISH` | `NOW` | CLI `-t publish` |
+| Schedule once | `SCHEDULE` | `ONCE` | CLI default `-t schedule` |
+| Weekly / monthly / custom | `SCHEDULE` | `RECURRING_*` | CLI `--json` (paid) |
+| Channel queue | `QUEUE` | `QUEUE` + `NEXT`\|`LAST` | CLI `--json` (paid, queue on) |
+| Needs approval | `NEEDS_APPROVAL` | `ONCE`/`QUEUE`/`RECURRING_*` | CLI `--json` + top-level `workflowId` — **not MCP** |
+
+Examples: https://github.com/verlynk/verlynk-agent/tree/main/examples  
+(`create-queue-post.json`, `create-recurring-*.json`, `create-needs-approval-post.json`, …)
+
+### CLI quick create
 
 ```bash
-npm install -g verlynk
-export VERLYNK_API_KEY=verlynk_...   # read-write Public API key (posts + inbox)
-verlynk profiles:list
-verlynk profiles:use <profile-id>
+verlynk profiles:list && verlynk profiles:use <profile-id>
 verlynk accounts:list --json
+verlynk posts:create -c "Caption" -i "<channel-id>" -d "2026-07-16T05:30:00.000Z" --timezone Asia/Calcutta
+verlynk posts:create --media-file ~/pic.png -c "Caption" -i "<channel-id>" -d "2026-07-16T05:30:00.000Z"
+verlynk posts:create --json ./examples/create-queue-post.json
+verlynk validate -t "$CAPTION" --strict
 ```
 
-### MCP
+### MCP create-posts
 
-- MCP token with `mcp:access` **or** OAuth
-- Server: `POST https://verlynk.com/api/public/mcp`
-- Optional: Public API key for uploading local files before MCP post
-- Inbox is **not** available via MCP — use the CLI
+- Optional `profileId` for another profile in the org
+- Confirm before `PUBLISH` / `SCHEDULE` unless user asked
+- Do **not** rely on MCP for `NEEDS_APPROVAL` (no `workflowId`)
 
-Setup: [HOW_TO_CONNECT.md](../../HOW_TO_CONNECT.md)
-
-## Discovery workflow
-
-### 1. Resolve profile + channel
+## Edit / delete / retry (CLI)
 
 ```bash
-verlynk accounts:list --json
-# Note channel _id and profileId._id — they must match when posting
+verlynk posts:update <post-id> --json ./examples/update-scheduled-post.json   # body: action + singular "post"
+verlynk posts:retry <post-id>     # FAILED only
+verlynk posts:delete <post-id> --yes
 ```
 
-Or MCP: `list-channels` (optionally `{ "profileId": "..." }`).
+| Status | Edit | Delete |
+| --- | --- | --- |
+| `SCHEDULED` / `QUEUED` / `NEEDS_APPROVAL` | Yes (content + reschedule) | Yes |
+| `PUBLISHED` | Limited: FB (`post`), LinkedIn, YouTube, Mastodon — **no reschedule** | Platform delete: FB, LI, X, YT, Pinterest, Bluesky, Mastodon, Threads — **not** IG/TikTok/GBP |
+| `FAILED` | No → **retry** | Yes (DB) |
+| `PROCESSING` | No | No |
 
-### 2. Text-only post (CLI)
+Edit `RECURRING_*` only when current status is `NEEDS_APPROVAL`. Never `action: DRAFT` on post update — use drafts endpoints.
+
+## Drafts (CLI)
 
 ```bash
-verlynk posts:create \
-  -c "Caption" \
-  -i "<channel-id>" \
-  -d "2026-07-16T05:30:00.000Z" \
-  --timezone Asia/Calcutta \
-  --profile-id "<profile-id>"
+verlynk posts:create -t draft ...
+verlynk posts:drafts --from 2026-07-01 --to 2026-07-31
+verlynk drafts:update <draft-id> --json ./examples/update-draft-to-schedule.json   # 202 async
+verlynk drafts:delete <draft-id> --yes
 ```
 
-### 3. Post with local image (CLI — preferred)
+Not visible in MCP `get-posts`.
+
+## Inbox (CLI only)
 
 ```bash
-verlynk posts:create --media-file ~/Pictures/quote.png \
-  -c "Caption" \
-  -i "<channel-id>" \
-  -d "2026-07-16T05:30:00.000Z" \
-  --timezone Asia/Calcutta \
-  --profile-id "<profile-id>"
-```
-
-Or two steps: `verlynk media:upload ./photo.png --json` then `--media-id` / `--json` with `mediaId`.
-
-### 4. MCP create-posts
-
-- Text: `media: []` or omit media
-- Image URL: `media: [{ "mediaUrl": "<cdn-or-https-url>", "mimeType": "image/png" }]`
-- Non-default profile: pass `profileId` on the tool call
-
-Confirm before `PUBLISH` / `SCHEDULE` unless the user explicitly asked.
-
-### 5. Verify
-
-```bash
-verlynk posts:list --from 2026-07-01 --to 2026-07-31 --status SCHEDULED
-```
-
-Or MCP `get-posts`. Drafts are not returned by `get-posts` / may need the dashboard.
-
-### 6. Inbox (CLI only)
-
-Verlynk does **not** generate reply text — you supply `-m`. Date range is required (max 40 days). Only top-level `COMMENT` items are replyable.
-
-```bash
-# List open comments
 verlynk inbox:list --from 2026-07-01 --to 2026-07-16 --status OPEN --type COMMENT --json
-
-# Reply (agent-composed message)
-verlynk inbox:reply <itemId> -m "<reply text>" --json
-
-# Triage — reply does not auto-close
+verlynk inbox:reply <itemId> -m "<reply>" --json
 verlynk inbox:status <itemId> --status CLOSED --json
 ```
 
-Docs: [docs.verlynk.com/cli/inbox](https://docs.verlynk.com/cli/inbox)
+## Limitations checklist
 
-## MCP tools (if using MCP)
+- Free plan: only `NOW` / `ONCE` / `DRAFT`; cap **10**/channel (also paid **trial**); paid after trial **300**/channel
+- Soft `SCHEDULE` pairing → verify list after create
+- Queue requires enabled queue + paid
+- MCP: create/list only; no labels/campaign/`workflowId`
+- List range max 40 days on `publishAt`
+- No create idempotency (duplicates possible)
 
-| Tool | Purpose |
-| --- | --- |
-| `list-channels` | List connected accounts |
-| `create-posts` | Create / schedule / publish |
-| `get-posts` | List posts by date/status |
-
-Schema: [schemas/create-posts.input.json](../../schemas/create-posts.input.json) (MCP media shape only).
-
-## Error handling
+## Errors
 
 | Error | Action |
 | --- | --- |
-| `ChannelNotInProfile` | Use the `profileId` that owns the channel from `accounts:list` |
-| `Invalid mediaId` / `Media upload is not complete` | Run `media:upload` or `POST .../complete` before create |
-| `mediaUrl is not allowed` | You mixed MCP fields into CLI/Public API JSON — use `mediaId` |
-| `API_KEY_SCOPE_DENIED` | Need `posts:write` / `inbox:read`/`inbox:write` (CLI) or `mcp:access` (MCP) |
-| `MEDIA_PRESIGN_PROFILE_REQUIRED` | Pass `--profile-id` / `?profileId=` |
-| `REPLY_NOT_SUPPORTED` | Item is a `REPLY` or has no linked post — reply to `parent.id` instead |
-| `INBOX_ITEM_NOT_FOUND` | Re-check the id with `inbox:list` |
+| `ChannelNotInProfile` | Use owning `--profile-id` / MCP `profileId` |
+| `post.ScheduleFeature` | Paid required for queue/recurring |
+| `Queue is not enabled` | Enable queue or use `SCHEDULE`/`ONCE` |
+| Soft empty create | Re-check action×schedule; list posts |
+| `INVALID_POST_STATUS_TO_UPDATE` | Wrong status — use retry for `FAILED` |
+| `mediaUrl is not allowed` | Mixed MCP fields into CLI JSON |
 
-## Links
+## More docs
 
-- [cli/README.md](../../cli/README.md) · [MEDIA.md](../../MEDIA.md) · [MCP_TOOLS.md](../../MCP_TOOLS.md)
-- [examples/EXAMPLES.md](../../examples/EXAMPLES.md) · [AUTHENTICATION.md](../../AUTHENTICATION.md)
+- https://github.com/verlynk/verlynk-agent/blob/main/MCP_TOOLS.md
+- https://github.com/verlynk/verlynk-agent/blob/main/OPERATIONS.md
+- https://github.com/verlynk/verlynk-agent/blob/main/MEDIA.md
+- https://github.com/verlynk/verlynk-agent/blob/main/AUTHENTICATION.md
+- https://docs.verlynk.com/cli/posts

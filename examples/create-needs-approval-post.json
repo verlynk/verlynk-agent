@@ -1,0 +1,26 @@
+{
+  "action": "NEEDS_APPROVAL",
+  "workflowId": "YOUR_WORKFLOW_ID",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Ready for review — please approve before publish.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "ONCE",
+        "details": {
+          "timezone": "UTC",
+          "utc": "2026-07-25T14:00:00.000Z"
+        }
+      }
+    }
+  ]
+}

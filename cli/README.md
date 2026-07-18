@@ -98,7 +98,7 @@ verlynk accounts:disconnect <account-id> --yes
 ### Creating Posts
 
 ```bash
-# Schedule
+# Schedule once
 verlynk posts:create -c "Hello from Verlynk!" -i "<channel-id>" -d "2026-07-15T09:00:00.000Z"
 
 # Draft
@@ -110,13 +110,17 @@ verlynk posts:create -c "We're live!" -i "<channel-id>" -t publish
 # Multi-channel
 verlynk posts:create -c "Launch day!" -i "id1,id2" -d "2026-07-20T14:00:00.000Z"
 
-# From JSON
+# From JSON (queue, recurring, needs approval, …)
 verlynk posts:create --json ./post.json
 
 # Validate caption limits
 verlynk validate -t "Hello from the CLI!"
 verlynk validate -t "$CAPTION" --strict
 ```
+
+CLI `-t schedule|draft|publish` maps to `ONCE` / `DRAFT` / `NOW` only. For `QUEUE`, `RECURRING_*`, and `NEEDS_APPROVAL` (+ `workflowId`), use `--json` — see [examples/](../examples/) and [docs.verlynk.com/cli/posts](https://docs.verlynk.com/cli/posts).
+
+**Pairing:** `action: SCHEDULE` only expands `ONCE` / recurring. `SCHEDULE` + `NOW` can return 202 with **zero posts** — prefer `PUBLISH` + `NOW`.
 
 **`posts:create` options:**
 
@@ -139,12 +143,15 @@ verlynk posts:list --from 2026-07-01 --to 2026-07-31
 verlynk posts:list --from 2026-07-01 --to 2026-07-31 --status SCHEDULED
 verlynk posts:get <post-id>
 verlynk posts:update <post-id> -c "Updated text" -i "<channel-id>" -d "2026-07-16T09:00:00.000Z"
-verlynk posts:retry <post-id>
+verlynk posts:update <post-id> --json ./examples/update-scheduled-post.json
+verlynk posts:retry <post-id>          # FAILED only
 verlynk posts:delete <post-id> --yes
 verlynk posts:drafts --from 2026-07-01 --to 2026-07-31
 verlynk drafts:update <draft-id> --json ./draft.json
 verlynk drafts:delete <draft-id> --yes
 ```
+
+Edit: `SCHEDULED` / `QUEUED` / `NEEDS_APPROVAL` / limited `PUBLISHED` (FB, LinkedIn, YouTube, Mastodon). Delete is hard; published IG/TikTok/GBP platform delete unsupported. Full matrices: [docs.verlynk.com/cli/posts](https://docs.verlynk.com/cli/posts).
 
 Date range for list/drafts is required (max 40 days).
 

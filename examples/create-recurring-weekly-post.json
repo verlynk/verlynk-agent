@@ -1,0 +1,27 @@
+{
+  "action": "SCHEDULE",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Weekly update — shipping every Monday and Wednesday.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "RECURRING_WEEKLY",
+        "details": {
+          "timezone": "Asia/Kolkata",
+          "daysOfWeek": ["Monday", "Wednesday"],
+          "utcStartDate": "2026-07-20T03:30:00.000Z",
+          "utcEndDate": "2026-09-20T03:30:00.000Z"
+        }
+      }
+    }
+  ]
+}

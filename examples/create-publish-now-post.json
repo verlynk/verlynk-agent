@@ -1,0 +1,24 @@
+{
+  "action": "PUBLISH",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Publishing now.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "NOW",
+        "details": {
+          "timezone": "UTC"
+        }
+      }
+    }
+  ]
+}

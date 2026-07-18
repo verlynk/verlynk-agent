@@ -84,12 +84,31 @@ Both `list-channels` and `get-posts` return only channels the authenticated user
 
 ### Plan limits (scheduling)
 
-| Plan | Schedule types allowed | Scheduled post cap (per validation) |
+| Plan | Schedule types allowed | Scheduled post cap (per channel) |
 | --- | --- | --- |
-| Free / no plan | `NOW`, `ONCE`, `DRAFT` only | 10 scheduled posts |
-| Paid (active) | All types including recurring, queue | 300 scheduled posts |
+| Free / no plan | `NOW`, `ONCE`, `DRAFT` only | **10** |
+| Paid + **trial active** | All types including recurring, queue | **10** |
+| Paid (trial ended) | All types including recurring, queue | **300** |
 
 Recurring and queue schedules on free plans fail validation (`post.ScheduleFeature`).
+
+### Action × schedule pairing (create)
+
+| `action` | Working `schedule.type` | Notes |
+| --- | --- | --- |
+| `DRAFT` | `DRAFT` only | Hard reject otherwise |
+| `PUBLISH` | Prefer `NOW` | Other types ignored; still publishes now |
+| `SCHEDULE` | `ONCE`, `RECURRING_*` | **`SCHEDULE` + `NOW`/`QUEUE`/`DRAFT` can return 202 with 0 posts** |
+| `QUEUE` | `QUEUE` + `NEXT`/`LAST` | Queue must be enabled on channel |
+| `NEEDS_APPROVAL` | `ONCE`, `QUEUE`, `RECURRING_*` | Runtime requires `workflowId` (Public/CLI only — MCP does not accept `workflowId`) |
+
+### Edit / delete / retry (Public API / CLI — not MCP)
+
+| Operation | Allowed statuses | Notes |
+| --- | --- | --- |
+| Edit | `SCHEDULED`, `QUEUED`, `NEEDS_APPROVAL`, limited `PUBLISHED` | Published: FB/LinkedIn/YouTube/Mastodon content only. Recurring on edit only if status is `NEEDS_APPROVAL`. |
+| Delete | All except `PROCESSING` | Published platform delete: FB, LI, X, YT, Pinterest, Bluesky, Mastodon, Threads (not IG/TikTok/GBP) |
+| Retry | `FAILED` only | Async 202 |
 
 ### Schedule validation rules
 
@@ -101,6 +120,10 @@ Recurring and queue schedules on free plans fail validation (`post.ScheduleFeatu
 | `RECURRING_CUSTOM` | 1–25 dates |
 
 Use IANA timezone strings (e.g. `America/New_York`, `Asia/Kolkata`) in all `schedule.details.timezone` fields.
+
+### Profiles
+
+Pass optional MCP tool `profileId` (or CLI `--profile-id`) for a non-default profile in the same org. See [AUTHENTICATION.md](./AUTHENTICATION.md).
 
 ---
 
@@ -124,7 +147,7 @@ Audit history is available in the Verlynk dashboard for state-changing operation
 | --- | --- |
 | Exposed MCP key | Rotate immediately — [SECURITY.md](./SECURITY.md) |
 | Duplicate posts published | Review audit log; delete via Public API or dashboard |
-| Wrong profile targeted | MCP cannot switch profiles — use Public API with `profileId` |
+| Wrong profile targeted | Confirm tool `profileId` / CLI `--profile-id`; must belong to default org |
 | Connector down | Check [HOW_TO_CONNECT.md](./HOW_TO_CONNECT.md) troubleshooting |
 
 **Support:** [SUPPORT.md](./SUPPORT.md)

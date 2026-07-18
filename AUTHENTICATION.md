@@ -84,17 +84,20 @@ JWT sessions do **not** require the `mcp:access` scope — the user is authentic
 
 ---
 
-## Workspace context (default profile)
+## Workspace context (profiles)
 
-MCP tools operate on the authenticated user's **default organization and default profile (project)**. This is resolved server-side; agents cannot pass a different `profileId` via MCP today.
+MCP tools resolve the authenticated user's **default organization**. By default they also use the **default profile (project)**.
+
+You can target another profile in the same org by passing optional tool argument **`profileId`** (UUID). The server validates that the profile belongs to your default organization (`Invalid profileId: profile not found or does not belong to your organization` otherwise).
 
 | Scenario | Behavior |
 | --- | --- |
-| Single profile in org | That profile is used automatically |
-| Multiple profiles | User must set a default profile in the Verlynk app |
-| No default set | Context resolution fails with an error |
+| No `profileId` | Default profile for the user |
+| Valid `profileId` in org | That profile is used |
+| Invalid / wrong-org `profileId` | Request fails |
+| No default org/profile and no `profileId` | Context resolution fails |
 
-To work with a non-default profile, use the [Public API v1](https://docs.verlynk.com) with an explicit `profileId` query parameter instead of MCP.
+CLI / Public API use `--profile-id` or query `?profileId=` instead.
 
 ---
 

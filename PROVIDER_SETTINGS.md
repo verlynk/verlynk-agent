@@ -175,10 +175,10 @@ These platforms use `metaData.contents` (text, title, media) without additional 
 | `action` | Required `schedule.type` | Notes |
 | --- | --- | --- |
 | `DRAFT` | `DRAFT` | Draft `utc` must be future, within 12 months |
-| `PUBLISH` | `NOW` | Immediate publish |
-| `SCHEDULE` | `ONCE`, `RECURRING_*` | `ONCE` requires future `utc` |
-| `QUEUE` | `QUEUE` | `queueType`: `NEXT` or `LAST` |
-| `NEEDS_APPROVAL` | Per workflow | Requires workflow configuration on channel |
+| `PUBLISH` | Prefer `NOW` | Other schedule types ignored; still publishes now |
+| `SCHEDULE` | `ONCE`, `RECURRING_*` | Wrong type can yield 202 with 0 posts |
+| `QUEUE` | `QUEUE` | `queueType`: `NEXT` or `LAST`; queue enabled; paid |
+| `NEEDS_APPROVAL` | `ONCE`, `QUEUE`, `RECURRING_*` | Requires top-level `workflowId` on Public API / CLI — **not available via MCP** |
 
 Free plans support only `NOW`, `ONCE`, and `DRAFT` schedule types. See [OPERATIONS.md](./OPERATIONS.md).
 
@@ -188,4 +188,5 @@ Free plans support only `NOW`, `ONCE`, and `DRAFT` schedule types. See [OPERATIO
 
 - [MCP_TOOLS.md](./MCP_TOOLS.md)
 - [examples/](./examples/)
+- [docs.verlynk.com/cli/posts](https://docs.verlynk.com/cli/posts)
 - [docs.verlynk.com](https://docs.verlynk.com)

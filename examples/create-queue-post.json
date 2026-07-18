@@ -1,0 +1,25 @@
+{
+  "action": "QUEUE",
+  "posts": [
+    {
+      "channelId": "YOUR_CHANNEL_ID",
+      "postType": "post",
+      "metaData": {
+        "contents": [
+          {
+            "title": "",
+            "text": "Queued post — will publish from the channel queue.",
+            "media": []
+          }
+        ]
+      },
+      "schedule": {
+        "type": "QUEUE",
+        "details": {
+          "timezone": "Asia/Kolkata",
+          "queueType": "NEXT"
+        }
+      }
+    }
+  ]
+}

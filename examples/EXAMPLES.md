@@ -201,36 +201,76 @@ See [`create-tiktok-post.json`](./create-tiktok-post.json) and [PROVIDER_SETTING
 **Agent prompt:**
 
 ```
-Publish this post to my X channel right now: "We are live! 🚀"
+Publish this post to my X channel right now: "We are live!"
 ```
 
-```json
-{
-  "action": "PUBLISH",
-  "posts": [
-    {
-      "channelId": "YOUR_X_CHANNEL_ID",
-      "postType": "post",
-      "metaData": {
-        "contents": [
-          {
-            "title": "",
-            "text": "We are live! 🚀",
-            "media": []
-          }
-        ],
-        "replySettings": "everyone"
-      },
-      "schedule": {
-        "type": "NOW",
-        "details": {
-          "timezone": "UTC"
-        }
-      }
-    }
-  ]
-}
+See [`create-publish-now-post.json`](./create-publish-now-post.json) (`action: PUBLISH` + `schedule.type: NOW`).
+
+> **Pairing:** `action: SCHEDULE` only expands `ONCE` / `RECURRING_*`. Using `SCHEDULE` + `NOW` can return **202 with zero posts**. Prefer `PUBLISH` + `NOW`.
+
+---
+
+## Queue post (paid / queue enabled)
+
+Channel queue must be enabled. Use `queueType` `NEXT` (front) or `LAST` (back).
+
+```bash
+verlynk posts:create --json ./examples/create-queue-post.json
 ```
+
+See [`create-queue-post.json`](./create-queue-post.json). Free plans reject `QUEUE` (`post.ScheduleFeature`).
+
+---
+
+## Recurring schedules (paid)
+
+```bash
+verlynk posts:create --json ./examples/create-recurring-weekly-post.json
+verlynk posts:create --json ./examples/create-recurring-monthly-post.json
+verlynk posts:create --json ./examples/create-recurring-custom-post.json
+```
+
+| Type | Limits |
+| --- | --- |
+| `RECURRING_WEEKLY` | Span ≤ 3 months; `daysOfWeek` like `"Monday"` |
+| `RECURRING_MONTHLY` | Span ≤ 12 months; `dayOfMonth` 1–31 |
+| `RECURRING_CUSTOM` | 1–25 future UTC dates |
+
+---
+
+## Needs approval (Public API / CLI only)
+
+Requires top-level `workflowId`. **MCP cannot send `workflowId`** — use CLI:
+
+```bash
+verlynk posts:create --json ./examples/create-needs-approval-post.json
+```
+
+Schedule types for approval: `ONCE`, `QUEUE`, `RECURRING_*` (not `NOW` / `DRAFT`).
+
+---
+
+## Update a scheduled post
+
+Edit body uses singular `post` (not `posts[]`):
+
+```bash
+verlynk posts:update <post-id> --json ./examples/update-scheduled-post.json
+```
+
+See [`update-scheduled-post.json`](./update-scheduled-post.json).
+
+Editable statuses: `SCHEDULED`, `QUEUED`, `NEEDS_APPROVAL`, and limited `PUBLISHED` (Facebook/LinkedIn/YouTube/Mastodon text). `FAILED` → use `posts:retry`. `PROCESSING` → cannot edit.
+
+---
+
+## Promote a draft to schedule
+
+```bash
+verlynk drafts:update <draft-id> --json ./examples/update-draft-to-schedule.json
+```
+
+Returns **202** immediately (async). Poll `posts:list` / `posts:drafts` to verify. See [`update-draft-to-schedule.json`](./update-draft-to-schedule.json).
 
 ---
 
@@ -259,8 +299,17 @@ Show all failed Instagram posts from the last 7 days in Verlynk
 | File | Description |
 | --- | --- |
 | [`create-text-post.json`](./create-text-post.json) | Draft text post |
-| [`create-scheduled-post.json`](./create-scheduled-post.json) | Scheduled single post |
+| [`create-scheduled-post.json`](./create-scheduled-post.json) | Schedule once (`ONCE`) |
+| [`create-publish-now-post.json`](./create-publish-now-post.json) | Publish now |
+| [`create-queue-post.json`](./create-queue-post.json) | Queue (`NEXT` / change to `LAST`) |
+| [`create-recurring-weekly-post.json`](./create-recurring-weekly-post.json) | Weekly recurring |
+| [`create-recurring-monthly-post.json`](./create-recurring-monthly-post.json) | Monthly recurring |
+| [`create-recurring-custom-post.json`](./create-recurring-custom-post.json) | Custom date list |
+| [`create-needs-approval-post.json`](./create-needs-approval-post.json) | Approval workflow (CLI/Public; needs `workflowId`) |
+| [`update-scheduled-post.json`](./update-scheduled-post.json) | Edit scheduled post (`post` singular) |
+| [`update-draft-to-schedule.json`](./update-draft-to-schedule.json) | Draft → schedule transition |
 | [`create-multi-platform.json`](./create-multi-platform.json) | LinkedIn + X campaign |
+| [`create-image-post-cli.json`](./create-image-post-cli.json) | CLI/Public media shape |
 | [`create-youtube-post.json`](./create-youtube-post.json) | YouTube video with tags |
 | [`create-tiktok-post.json`](./create-tiktok-post.json) | TikTok video post |
 | [`upload-media.sh`](./upload-media.sh) | Media presign upload script |
