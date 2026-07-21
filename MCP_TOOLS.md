@@ -1,6 +1,6 @@
 # MCP Tools Reference
 
-Full reference for the 3 active tools on the Verlynk MCP server (`verlynk-social-mcp` v1.0.0).
+Full reference for tools on the Verlynk MCP server (`verlynk-social-mcp` v1.0.0).
 
 | Property | Value |
 | --- | --- |
@@ -10,6 +10,23 @@ Full reference for the 3 active tools on the Verlynk MCP server (`verlynk-social
 | **OIDC metadata** | `GET https://verlynk.com/api/public/mcp/.well-known/openid-configuration` |
 
 > `GET /api/public/mcp` returns `405 Method Not Allowed`. Clients must use `POST` only.
+
+### Tool index
+
+| Tool | Kind | Notes |
+| --- | --- | --- |
+| `list-profiles` | Read | Discover projects; use before switching |
+| `get-profile` | Read | Single profile by UUID |
+| `create-profile` / `update-profile` / `delete-profile` | Write | Profile CRUD |
+| `list-channels` | Read | Returns `profileId`, `profileName`, `channels` |
+| `create-posts` | Write | Supports `workflowId`, `labels`, `campaign` |
+| `get-posts` | Read | Not drafts |
+| `get-post` / `update-post` / `delete-post` / `retry-post` | Mixed | Post lifecycle |
+| `get-drafts` / `update-draft` / `delete-draft` | Mixed | Draft store |
+| `list-inbox` / `reply-inbox` / `update-inbox-status` | Mixed | Comments & replies |
+| `get-post-analytics` / `get-best-time` | Read | Analytics (best-time may need AI plan) |
+| `validate-post-length` | Read | Caption limits |
+| `get-usage` | Read | Plan / channel usage |
 
 ---
 
@@ -29,9 +46,36 @@ See [AUTHENTICATION.md#workspace-context-profiles](./AUTHENTICATION.md#workspace
 
 ---
 
+## `list-profiles`
+
+Lists organization profiles (projects). **Call this when the user mentions another project** — match by `name`, then pass `id` as `profileId` to other tools.
+
+### Input
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `includeOverLimit` | boolean | No | Include plan-over-limit profiles (default false) |
+
+### Response (`structuredContent.profiles[]`)
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` / `_id` | string (UUID) | Pass as `profileId` on other tools |
+| `name` | string | Project name |
+| `description` | string | Optional |
+| `isDefault` | boolean | User’s default profile |
+| `createdAt` | string | ISO timestamp |
+
+### Example prompts
+
+- *List my Verlynk projects*
+- *There is another project — list channels from that one* → `list-profiles` then `list-channels` with `profileId`
+
+---
+
 ## `list-channels`
 
-Returns social accounts the authenticated user can publish to in their **default profile**. Only **connected** channels where the user has a channel role are included.
+Returns social accounts the authenticated user can publish to in their **default profile**, or a specific profile when `profileId` is set.
 
 ### Annotations
 
@@ -50,7 +94,7 @@ JSON schema: [`schemas/list-channels.input.json`](./schemas/list-channels.input.
 {}
 ```
 
-No filter parameters such as `platform` or `query` are supported (filter client-side). Optional tool arg **`profileId`** selects which profile’s channels to list (same org). See [AUTHENTICATION.md](./AUTHENTICATION.md).
+Optional tool arg **`profileId`** selects which profile’s channels to list (same org). If you only know the project name, call `list-profiles` first.
 
 ### Response
 
@@ -58,9 +102,11 @@ No filter parameters such as `platform` or `query` are supported (filter client-
 {
   "content": [
     { "type": "text", "text": "Channels fetched successfully." },
-    { "type": "text", "text": "channels: [...]" }
+    { "type": "text", "text": "channels: {...}" }
   ],
   "structuredContent": {
+    "profileId": "550e8400-e29b-41d4-a716-446655440000",
+    "profileName": "Marketing",
     "channels": [
       {
         "channelId": "550e8400-e29b-41d4-a716-446655440000",
@@ -95,6 +141,7 @@ No filter parameters such as `platform` or `query` are supported (filter client-
 - *List all my connected Verlynk channels*
 - *Which LinkedIn accounts do I have connected in Verlynk?*
 - *Show my X/Twitter channels*
+- *List channels from my other project* → `list-profiles` then `list-channels` with `profileId`
 
 Filter by platform in the agent: `channels.filter(c => c.platformName === 'linkedin')`.
 
@@ -116,11 +163,11 @@ The authenticated user must have **Create** and **Publish** (or **Needs approval
 | `PUBLISH` | Prefer `NOW` | Published immediately (other schedule types ignored) |
 | `SCHEDULE` | `ONCE` / `RECURRING_*` | Scheduled — visible in `get-posts`. **Do not** use `SCHEDULE`+`NOW` (can accept with 0 posts). |
 | `QUEUE` | `QUEUE` + `queueType` `NEXT`\|`LAST` | Queued (paid + queue enabled) |
-| `NEEDS_APPROVAL` | `ONCE` / `QUEUE` / `RECURRING_*` | **Not usable via MCP** — MCP does not accept `workflowId`. Use CLI/Public API with `workflowId`. |
+| `NEEDS_APPROVAL` | `ONCE` / `QUEUE` / `RECURRING_*` | Requires top-level `workflowId` on `create-posts` |
 
 See [PROVIDER_SETTINGS.md#action-and-schedule-pairing](./PROVIDER_SETTINGS.md#action-and-schedule-pairing), [OPERATIONS.md](./OPERATIONS.md), and [examples/](./examples/).
 
-**MCP has no update / delete / retry / draft-list tools** — use the CLI (`posts:update`, `posts:delete`, `posts:retry`, `posts:drafts`).
+Post lifecycle tools: `get-post`, `update-post`, `delete-post`, `retry-post`, `get-drafts`, `update-draft`, `delete-draft`.
 
 ### Annotations
 
@@ -142,6 +189,9 @@ JSON schema: [`schemas/create-posts.input.json`](./schemas/create-posts.input.js
 | --- | --- | --- | --- |
 | `action` | string | Yes | `DRAFT`, `SCHEDULE`, `PUBLISH`, `QUEUE`, or `NEEDS_APPROVAL` |
 | `posts` | array | Yes | One or more post objects |
+| `workflowId` | string (UUID) | For `NEEDS_APPROVAL` | Approval workflow ID |
+| `labels` | string[] | No | Label IDs |
+| `campaign` | string | No | Campaign ID |
 | `profileId` | string (UUID) | No | Target profile in the same org (see [AUTHENTICATION.md](./AUTHENTICATION.md)) |
 
 #### Post object (`posts[]`)
@@ -319,12 +369,40 @@ Full response shape: [docs.verlynk.com/api-reference](https://docs.verlynk.com/a
 
 ---
 
+## Additional tools (summary)
+
+| Tool | Key inputs | Notes |
+| --- | --- | --- |
+| `get-profile` | `profileId` | Single profile |
+| `create-profile` | `name`, `description?` | Plan project limits apply |
+| `update-profile` | `profileId`, `name?`, `description?`, `isDefault?` | |
+| `delete-profile` | `profileId` | Not default; no connected channels |
+| `get-post` | `postId`, `profileId?` | |
+| `update-post` | `postId`, `action`, `post`, … | MCP media shape |
+| `delete-post` | `postId` | Destructive |
+| `retry-post` | `postId` | `FAILED` only |
+| `get-drafts` | `from`, `to`, filters | Max 40 days |
+| `update-draft` | `draftId`, `action`, `posts` | Async accept |
+| `delete-draft` | `draftId` | Destructive |
+| `list-inbox` | `from`, `to`, filters | Max 40 days |
+| `reply-inbox` | `itemId`, `message` | Top-level COMMENT only |
+| `update-inbox-status` | `itemId`, `status` | `OPEN`\|`FOLLOWUP`\|`CLOSED` |
+| `get-post-analytics` | `postId` | |
+| `get-best-time` | `accountId`, `postType?` | May require AI plan |
+| `validate-post-length` | `text` | |
+| `get-usage` | — | Org billing/usage |
+
+All profile-scoped tools accept optional `profileId` (discover via `list-profiles`).
+
+---
+
 ## Discovery workflow
 
-1. **`list-channels`** → `channels[].channelId` + `channels[].platformName`
-2. **Upload media** (if needed) → [MEDIA.md](./MEDIA.md)
-3. **`create-posts`** → platform fields from [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md)
-4. **`get-posts`** → verify scheduling (not for drafts)
+1. **`list-profiles`** (if multiple projects) → pick `id` as `profileId`
+2. **`list-channels`** (with `profileId` if needed) → `channels[].channelId`
+3. **Upload media** (if needed) → [MEDIA.md](./MEDIA.md)
+4. **`create-posts`** → platform fields from [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md)
+5. **`get-posts`** / **`get-drafts`** → verify
 
 ---
 

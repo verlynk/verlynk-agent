@@ -2,6 +2,18 @@
 
 All notable changes to this documentation repo are listed here.
 
+## [1.7.0] - 2026-07-21
+
+### Added
+
+- MCP tool parity with CLI: profiles (`list-profiles`, `get-profile`, create/update/delete), post lifecycle (`get-post`, `update-post`, `delete-post`, `retry-post`), drafts, inbox, analytics, validate, usage
+- `create-posts` now accepts top-level `workflowId`, `labels`, and `campaign` (NEEDS_APPROVAL parity)
+- Multi-profile discovery: agents call `list-profiles` then pass `profileId`; `list-channels` echoes `profileId` / `profileName`
+
+### Changed
+
+- [FEATURES.md](./FEATURES.md), [MCP_TOOLS.md](./MCP_TOOLS.md), [AUTHENTICATION.md](./AUTHENTICATION.md), [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md), [examples/EXAMPLES.md](./examples/EXAMPLES.md) updated for expanded MCP surface
+
 ## [1.6.0] - 2026-07-18
 
 ### Added
@@ -13,7 +25,7 @@ All notable changes to this documentation repo are listed here.
 ### Fixed
 
 - MCP **does** honor optional tool `profileId` — corrected [AUTHENTICATION.md](./AUTHENTICATION.md), [FEATURES.md](./FEATURES.md), [OPERATIONS.md](./OPERATIONS.md), skill
-- Documented soft `SCHEDULE` × schedule-type pairing (202 with zero posts) and MCP `NEEDS_APPROVAL` limitation (no `workflowId`)
+- Documented soft `SCHEDULE` × schedule-type pairing (202 with zero posts)
 - Clarified edit/delete status matrices and published platform limits
 
 ## [1.5.0] - 2026-07-16

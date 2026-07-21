@@ -100,9 +100,9 @@ Recurring and queue schedules on free plans fail validation (`post.ScheduleFeatu
 | `PUBLISH` | Prefer `NOW` | Other types ignored; still publishes now |
 | `SCHEDULE` | `ONCE`, `RECURRING_*` | **`SCHEDULE` + `NOW`/`QUEUE`/`DRAFT` can return 202 with 0 posts** |
 | `QUEUE` | `QUEUE` + `NEXT`/`LAST` | Queue must be enabled on channel |
-| `NEEDS_APPROVAL` | `ONCE`, `QUEUE`, `RECURRING_*` | Runtime requires `workflowId` (Public/CLI only — MCP does not accept `workflowId`) |
+| `NEEDS_APPROVAL` | `ONCE`, `QUEUE`, `RECURRING_*` | Runtime requires top-level `workflowId` on MCP `create-posts` or Public/CLI |
 
-### Edit / delete / retry (Public API / CLI — not MCP)
+### Edit / delete / retry (MCP, Public API, or CLI)
 
 | Operation | Allowed statuses | Notes |
 | --- | --- | --- |
@@ -123,7 +123,7 @@ Use IANA timezone strings (e.g. `America/New_York`, `Asia/Kolkata`) in all `sche
 
 ### Profiles
 
-Pass optional MCP tool `profileId` (or CLI `--profile-id`) for a non-default profile in the same org. See [AUTHENTICATION.md](./AUTHENTICATION.md).
+Call MCP `list-profiles` (or CLI `profiles:list`) to discover projects, then pass optional MCP tool `profileId` (or CLI `--profile-id`) for a non-default profile in the same org. See [AUTHENTICATION.md](./AUTHENTICATION.md).
 
 ---
 

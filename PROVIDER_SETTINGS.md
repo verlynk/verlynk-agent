@@ -178,7 +178,7 @@ These platforms use `metaData.contents` (text, title, media) without additional 
 | `PUBLISH` | Prefer `NOW` | Other schedule types ignored; still publishes now |
 | `SCHEDULE` | `ONCE`, `RECURRING_*` | Wrong type can yield 202 with 0 posts |
 | `QUEUE` | `QUEUE` | `queueType`: `NEXT` or `LAST`; queue enabled; paid |
-| `NEEDS_APPROVAL` | `ONCE`, `QUEUE`, `RECURRING_*` | Requires top-level `workflowId` on Public API / CLI — **not available via MCP** |
+| `NEEDS_APPROVAL` | `ONCE`, `QUEUE`, `RECURRING_*` | Requires top-level `workflowId` on MCP `create-posts` or Public API / CLI |
 
 Free plans support only `NOW`, `ONCE`, and `DRAFT` schedule types. See [OPERATIONS.md](./OPERATIONS.md).
 

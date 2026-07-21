@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "includeOverLimit": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, include profiles that exceed the plan project limit."
+    }
+  },
+  "additionalProperties": false
+}

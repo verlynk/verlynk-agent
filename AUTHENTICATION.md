@@ -88,7 +88,15 @@ JWT sessions do **not** require the `mcp:access` scope — the user is authentic
 
 MCP tools resolve the authenticated user's **default organization**. By default they also use the **default profile (project)**.
 
-You can target another profile in the same org by passing optional tool argument **`profileId`** (UUID). The server validates that the profile belongs to your default organization (`Invalid profileId: profile not found or does not belong to your organization` otherwise).
+### Discover and switch (same as CLI)
+
+1. Call **`list-profiles`** to see all projects (`id`, `name`, `isDefault`).
+2. Optionally call **`get-profile`** with a known UUID.
+3. Pass that profile’s UUID as tool argument **`profileId`** on other tools (`list-channels`, `get-posts`, `create-posts`, inbox, etc.).
+
+`list-channels` returns `profileId` and `profileName` in its structured content so you can confirm which project you are viewing.
+
+The server validates that `profileId` belongs to your default organization (`Invalid profileId: profile not found or does not belong to your organization` otherwise).
 
 | Scenario | Behavior |
 | --- | --- |
@@ -96,8 +104,9 @@ You can target another profile in the same org by passing optional tool argument
 | Valid `profileId` in org | That profile is used |
 | Invalid / wrong-org `profileId` | Request fails |
 | No default org/profile and no `profileId` | Context resolution fails |
+| User says “another project” but no UUID | Call `list-profiles`, match by name, then retry with `profileId` |
 
-CLI / Public API use `--profile-id` or query `?profileId=` instead.
+CLI equivalent: `profiles:list` then `--profile-id` / `?profileId=`.
 
 ---
 

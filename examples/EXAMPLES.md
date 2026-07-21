@@ -11,6 +11,20 @@ Replace placeholder values:
 
 ## Basic discovery workflow
 
+### 0. List profiles (multi-project)
+
+**Agent prompt:**
+
+```
+There is another project in my Verlynk account — list channels from that one
+```
+
+**MCP tools:**
+
+1. `list-profiles` with `{}`
+2. Pick the non-default (or match by `name`) → use `id` as `profileId`
+3. `list-channels` with `{ "profileId": "<uuid>" }`
+
 ### 1. List channels
 
 **Agent prompt:**
@@ -21,7 +35,7 @@ List all my connected Verlynk channels
 
 **MCP tool:** `list-channels` with `{}`
 
-**Use the response:** `structuredContent.channels[].channelId` → `channelId`, `.platformName` → platform.
+**Use the response:** `structuredContent.channels[].channelId` → `channelId`, `.platformName` → platform. Also note `structuredContent.profileId` / `profileName`.
 
 ### 2. List scheduled posts
 
@@ -238,9 +252,9 @@ verlynk posts:create --json ./examples/create-recurring-custom-post.json
 
 ---
 
-## Needs approval (Public API / CLI only)
+## Needs approval
 
-Requires top-level `workflowId`. **MCP cannot send `workflowId`** — use CLI:
+Requires top-level `workflowId` on MCP `create-posts` or CLI `--json`:
 
 ```bash
 verlynk posts:create --json ./examples/create-needs-approval-post.json

@@ -54,8 +54,8 @@ verlynk posts:create --media-file ./photo.png -c "Caption" -i "<channel-id>" -d 
 
 | Surface | Tools / commands |
 | --- | --- |
-| MCP | `list-channels`, `create-posts`, `get-posts` |
-| CLI | `accounts:*`, `posts:*`, `media:upload`, `inbox:list`\|`reply`\|`status`, `profiles:*`, … |
+| MCP | Profiles, channels, posts CRUD/retry/drafts, inbox, analytics, validate, usage — see [FEATURES.md](./FEATURES.md) |
+| CLI | `accounts:*`, `posts:*`, `media:upload`, `inbox:*`, `profiles:*`, `keys:*`, … |
 
 See [FEATURES.md](./FEATURES.md) and [skills/verlynk/SKILL.md](./skills/verlynk/SKILL.md).
 

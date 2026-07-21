@@ -13,7 +13,21 @@
     "profileId": {
       "type": "string",
       "format": "uuid",
-      "description": "Optional profile (project) ID when posting to a non-default profile. Must belong to your organization."
+      "description": "Optional profile (project) ID when posting to a non-default profile. Call list-profiles first if you only know the project name."
+    },
+    "workflowId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Required for NEEDS_APPROVAL — approval workflow UUID."
+    },
+    "labels": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional label IDs"
+    },
+    "campaign": {
+      "type": "string",
+      "description": "Optional campaign ID"
     },
     "posts": {
       "type": "array",
