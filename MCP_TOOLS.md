@@ -240,16 +240,28 @@ Platform-specific `metaData` fields: [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.
 ```json
 {
   "content": [
-    { "type": "text", "text": "Posts submitted for processing" }
+    { "type": "text", "text": "Posts submitted for processing" },
+    {
+      "type": "text",
+      "text": "Open in Verlynk: https://verlynk.com/{orgId}/project/{projectId}/publishing/calendar?postId={postId}"
+    }
   ],
   "structuredContent": {
     "status": "accepted",
-    "count": 1
+    "count": 1,
+    "posts": [
+      {
+        "postId": "3af1d60b-3f19-48d4-a693-9dcebd9f6650",
+        "url": "https://verlynk.com/{orgId}/project/{projectId}/publishing/calendar?postId=3af1d60b-3f19-48d4-a693-9dcebd9f6650"
+      }
+    ]
   }
 }
 ```
 
-`status: "accepted"` means validation passed and posts are queued for processing — not yet published.
+`status: "accepted"` means validation passed and rows were created — platform publish may still be in progress for `PUBLISH`.
+
+For `DRAFT`, `structuredContent.drafts[]` is returned instead (`draftId` + drafts list URL). Calendar `?postId=` links apply only to non-draft posts.
 
 ### Example
 

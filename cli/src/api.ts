@@ -457,7 +457,11 @@ export class VerlynkAPI {
   }
 
   createPosts(data: CreatePostsData, profileId?: string) {
-    return this.request<{ message: string }>('/v1/posts', {
+    return this.request<{
+      message: string;
+      posts?: Array<{ postId: string; url?: string }>;
+      drafts?: Array<{ draftId: string; url?: string }>;
+    }>('/v1/posts', {
       method: 'POST',
       body: data,
       params: profileId ? { profileId } : undefined,

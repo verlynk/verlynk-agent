@@ -237,6 +237,14 @@ export async function createPost(argv: {
   try {
     const result = await api.createPosts(body, profileId);
     console.log(result.message || 'Posts submitted for processing.');
+    for (const post of result.posts ?? []) {
+      console.log(post.url ? post.url : post.postId);
+    }
+    for (const draft of result.drafts ?? []) {
+      console.log(
+        draft.url ? `${draft.draftId}  ${draft.url}` : draft.draftId
+      );
+    }
   } catch (err: unknown) {
     fail(err);
   }
