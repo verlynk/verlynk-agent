@@ -2,6 +2,12 @@
 
 All notable changes to this documentation repo are listed here.
 
+## [1.7.1] - 2026-07-22
+
+### Changed
+
+- `SCHEDULE` + `NOW` (and other mismatched action×schedule pairs) are now **rejected with HTTP 400** — updated OPERATIONS, MCP_TOOLS, EXAMPLES, CLI README, skill, and MEDIA.md (no public `GET /v1/media/{id}`)
+
 ## [1.7.0] - 2026-07-21
 
 ### Added

@@ -98,7 +98,7 @@ Recurring and queue schedules on free plans fail validation (`post.ScheduleFeatu
 | --- | --- | --- |
 | `DRAFT` | `DRAFT` only | Hard reject otherwise |
 | `PUBLISH` | Prefer `NOW` | Other types ignored; still publishes now |
-| `SCHEDULE` | `ONCE`, `RECURRING_*` | **`SCHEDULE` + `NOW`/`QUEUE`/`DRAFT` can return 202 with 0 posts** |
+| `SCHEDULE` | `ONCE`, `RECURRING_*` | `SCHEDULE` + `NOW`/`QUEUE`/`DRAFT` is rejected with **400** |
 | `QUEUE` | `QUEUE` + `NEXT`/`LAST` | Queue must be enabled on channel |
 | `NEEDS_APPROVAL` | `ONCE`, `QUEUE`, `RECURRING_*` | Runtime requires top-level `workflowId` on MCP `create-posts` or Public/CLI |
 

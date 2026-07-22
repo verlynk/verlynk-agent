@@ -176,7 +176,7 @@ These platforms use `metaData.contents` (text, title, media) without additional 
 | --- | --- | --- |
 | `DRAFT` | `DRAFT` | Draft `utc` must be future, within 12 months |
 | `PUBLISH` | Prefer `NOW` | Other schedule types ignored; still publishes now |
-| `SCHEDULE` | `ONCE`, `RECURRING_*` | Wrong type can yield 202 with 0 posts |
+| `SCHEDULE` | `ONCE`, `RECURRING_*` | Wrong type is rejected with **400** |
 | `QUEUE` | `QUEUE` | `queueType`: `NEXT` or `LAST`; queue enabled; paid |
 | `NEEDS_APPROVAL` | `ONCE`, `QUEUE`, `RECURRING_*` | Requires top-level `workflowId` on MCP `create-posts` or Public API / CLI |
 

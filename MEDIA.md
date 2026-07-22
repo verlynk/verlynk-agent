@@ -165,6 +165,8 @@ MCP media items use **only**:
 
 Create keys in **Settings → Developer**. Presign needs a valid billing plan.
 
+There is **no** public `GET /v1/media/{mediaId}` — after upload, reference `mediaId` only in `POST /v1/posts`. A GET on that path will 404.
+
 ## Supported content types
 
 | Category | MIME types |

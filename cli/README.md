@@ -120,7 +120,7 @@ verlynk validate -t "$CAPTION" --strict
 
 CLI `-t schedule|draft|publish` maps to `ONCE` / `DRAFT` / `NOW` only. For `QUEUE`, `RECURRING_*`, and `NEEDS_APPROVAL` (+ `workflowId`), use `--json` — see [examples/](../examples/) and [docs.verlynk.com/cli/posts](https://docs.verlynk.com/cli/posts).
 
-**Pairing:** `action: SCHEDULE` only expands `ONCE` / recurring. `SCHEDULE` + `NOW` can return 202 with **zero posts** — prefer `PUBLISH` + `NOW`.
+**Pairing:** `action: SCHEDULE` only accepts `ONCE` / recurring. `SCHEDULE` + `NOW` is rejected with **400** — prefer `PUBLISH` + `NOW`.
 
 **`posts:create` options:**
 

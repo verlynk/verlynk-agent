@@ -220,7 +220,7 @@ Publish this post to my X channel right now: "We are live!"
 
 See [`create-publish-now-post.json`](./create-publish-now-post.json) (`action: PUBLISH` + `schedule.type: NOW`).
 
-> **Pairing:** `action: SCHEDULE` only expands `ONCE` / `RECURRING_*`. Using `SCHEDULE` + `NOW` can return **202 with zero posts**. Prefer `PUBLISH` + `NOW`.
+> **Pairing:** `action: SCHEDULE` only accepts `ONCE` / `RECURRING_*`. Using `SCHEDULE` + `NOW` is rejected with **400**. Prefer `PUBLISH` + `NOW`.
 
 ---
 

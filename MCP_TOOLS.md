@@ -161,7 +161,7 @@ The authenticated user must have **Create** and **Publish** (or **Needs approval
 | --- | --- | --- |
 | `DRAFT` | `DRAFT` | Saved to draft store — **not** in `get-posts` |
 | `PUBLISH` | Prefer `NOW` | Published immediately (other schedule types ignored) |
-| `SCHEDULE` | `ONCE` / `RECURRING_*` | Scheduled — visible in `get-posts`. **Do not** use `SCHEDULE`+`NOW` (can accept with 0 posts). |
+| `SCHEDULE` | `ONCE` / `RECURRING_*` | Scheduled — visible in `get-posts`. **Do not** use `SCHEDULE`+`NOW` (rejected with 400). |
 | `QUEUE` | `QUEUE` + `queueType` `NEXT`\|`LAST` | Queued (paid + queue enabled) |
 | `NEEDS_APPROVAL` | `ONCE` / `QUEUE` / `RECURRING_*` | Requires top-level `workflowId` on `create-posts` |
 

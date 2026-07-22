@@ -69,7 +69,7 @@ When the user mentions another project/profile:
 
 ## Create — pick `action` + `schedule.type`
 
-**Wrong pairs can return HTTP 202 with zero posts.** Always verify with `posts:list` / `get-posts`.
+**Wrong pairs are rejected with HTTP 400.** Always verify with `posts:list` / `get-posts`.
 
 | Goal | `action` | `schedule.type` | How |
 | --- | --- | --- | --- |
@@ -150,7 +150,7 @@ Verlynk never generates reply text — decide externally, then reply.
 | `ChannelNotInProfile` | Use owning `--profile-id` / MCP `profileId` (from `list-profiles`) |
 | `post.ScheduleFeature` | Paid required for queue/recurring |
 | `Queue is not enabled` | Enable queue or use `SCHEDULE`/`ONCE` |
-| Soft empty create | Re-check action×schedule; list posts |
+| Rejected pairing | Fix action×schedule; list posts |
 | `INVALID_POST_STATUS_TO_UPDATE` | Wrong status — use retry for `FAILED` |
 | `mediaUrl is not allowed` | Mixed MCP fields into CLI JSON |
 
