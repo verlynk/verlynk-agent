@@ -10,7 +10,36 @@ Create a key with the `mcp:access` scope: [Create MCP Token](https://docs.verlyn
 
 ---
 
-## Claude Desktop
+## Claude (claude.ai / Desktop) — Custom Connector (recommended)
+
+Claude connects to Verlynk as a **remote MCP custom connector**. No local Node.js proxy and no MCP token are required for the usual flow — authenticate with **Verlynk OAuth** when you click **Connect**.
+
+Official Anthropic guide: [Custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
+
+### Prerequisites
+
+- Verlynk account with connected social channels
+
+### Setup
+
+1. Open [claude.ai](https://claude.ai) or Claude Desktop → **Settings** (or **Customize**) → **Connectors**
+2. Click **+** → **Add custom connector**
+3. Enter:
+   - **Name:** `Verlynk`
+   - **Remote MCP server URL:** `https://verlynk.com/api/public/mcp`
+4. Click **Add** (leave advanced OAuth client fields empty; do not add request headers)
+5. Click **Connect** on Verlynk and complete Verlynk sign-in / authorize
+6. In a chat, open **+** → **Connectors** and enable **Verlynk**
+
+Docs: [docs.verlynk.com/integrations/claude](https://docs.verlynk.com/integrations/claude)
+
+> **Team / Enterprise:** An Owner must add the connector under Admin / Organization settings → Connectors before members can **Connect**.
+
+---
+
+## Claude Desktop — local config (optional)
+
+Use only if you prefer a local `mcp-remote` bridge instead of a custom connector.
 
 ### Prerequisites
 
