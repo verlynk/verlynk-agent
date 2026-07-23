@@ -88,7 +88,7 @@ Include only when `platformName` is `x`.
 | Field | Type | Description |
 | --- | --- | --- |
 | `enableDirectMessaging` | boolean | Enable DM from post |
-| `replySettings` | string | Who can reply: `everyone`, `following`, `mentionedUsers`, `subscribers` |
+| `replySettings` | string | Who can reply: `everyone`, `following`, `mentionedUsers`, `subscribers`. Optional — server defaults to `everyone` if omitted. |
 
 **`postType`:** `post` or `thread`
 

@@ -100,7 +100,7 @@
         "replySettings": {
           "type": "string",
           "enum": ["everyone", "following", "mentionedUsers", "subscribers"],
-          "description": "X/Twitter only"
+          "description": "X/Twitter only. Who can reply. Defaults to everyone if omitted."
         },
         "publishAsDraft": { "type": "boolean", "description": "TikTok only" },
         "disableComment": { "type": "boolean", "description": "TikTok only" },

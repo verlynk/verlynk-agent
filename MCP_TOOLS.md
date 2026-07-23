@@ -233,7 +233,7 @@ The server downloads `mediaUrl`, stores media in Verlynk S3, and validates per c
 | `RECURRING_MONTHLY` | `timezone`, `dayOfMonth` (1–31), `utcStartDate`, `utcEndDate` | `SCHEDULE` |
 | `RECURRING_CUSTOM` | `timezone`, `utc` (array of ISO 8601 datetimes) | `SCHEDULE` |
 
-Platform-specific `metaData` fields: [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md).
+Platform-specific `metaData` fields: [PROVIDER_SETTINGS.md](./PROVIDER_SETTINGS.md). For X/Twitter, `replySettings` defaults to `everyone` if omitted.
 
 ### Response
 

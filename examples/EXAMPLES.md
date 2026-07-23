@@ -102,6 +102,8 @@ Schedule the same announcement on my LinkedIn and X channels for July 8 at 2pm U
 
 **MCP tool:** `create-posts` with multiple items in `posts[]` — see [`create-multi-platform.json`](./create-multi-platform.json)
 
+> For X channels, include `metaData.replySettings` (or omit it — server defaults to `everyone`).
+
 ---
 
 ## Image post with media upload
