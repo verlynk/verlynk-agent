@@ -192,15 +192,20 @@ See [MEDIA.md](../MEDIA.md) — do not mix MCP and CLI media field names.
 
 ## YouTube video post
 
-1. Upload video via [`upload-media.sh`](./upload-media.sh)
-2. Use `publicUrl` in [`create-youtube-post.json`](./create-youtube-post.json)
+Local video files must use the **CLI** (`media:upload` → `posts:create --json`). Do not use MCP `mediaUrl` for video.
+
+1. `verlynk media:upload ./demo.mp4 --content-type video/mp4 --json` → copy `mediaId`
+2. Put `{ mediaId, fileType: "video", contentType: "video/mp4" }` in [`create-youtube-post.json`](./create-youtube-post.json)
+3. Include required `category: { id, name }` (e.g. Science & Technology `id: "28"`)
+4. `verlynk posts:create --json ./examples/create-youtube-post.json --profile-id YOUR_PROFILE_ID`
 
 **Agent prompt:**
 
 ```
-Schedule a YouTube video titled "Product Demo — Q3 Features" for July 10 at 6pm UTC.
-Use this media URL: https://cdn.verlynk.com/temp/.../demo.mp4
+Using the Verlynk CLI, upload ./demo.mp4 and schedule a YouTube video titled "Product Demo — Q3 Features" for July 10 at 6pm UTC. Category Science & Technology, privacy public. Use the profile that owns the YouTube channel.
 ```
+
+Docs: [Create Video Post](https://docs.verlynk.com/prompt-examples/posts/create-video-post)
 
 ---
 

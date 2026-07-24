@@ -38,7 +38,7 @@ Include only when `platformName` is `youtube`.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `category` | `{ id, name }` | Video category |
+| `category` | `{ id, name }` | **Required** by the API (e.g. `{ "id": "28", "name": "Science & Technology" }`) |
 | `privacy` | string | Privacy setting |
 | `license` | string | Video license |
 | `embedding` | boolean | Allow embedding |
@@ -50,7 +50,7 @@ Include only when `platformName` is `youtube`.
 
 **`postType`:** typically `video`
 
-**Media:** required — upload video via [MEDIA.md](./MEDIA.md)
+**Media:** required — upload local video via CLI ([MEDIA.md](./MEDIA.md)) with `{ mediaId, fileType: "video", contentType: "video/mp4" }`. Prefer CLI over MCP `mediaUrl` for video.
 
 Example: [`examples/create-youtube-post.json`](./examples/create-youtube-post.json)
 

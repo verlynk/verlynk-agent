@@ -11,16 +11,23 @@
             "text": "A walkthrough of our latest features. Timestamps in the description.",
             "media": [
               {
-                "mediaUrl": "https://cdn.verlynk.com/temp/.../demo.mp4",
-                "mimeType": "video/mp4"
+                "mediaId": "YOUR_MEDIA_ID_FROM_MEDIA_UPLOAD",
+                "fileType": "video",
+                "contentType": "video/mp4"
               }
             ]
           }
         ],
+        "category": {
+          "id": "28",
+          "name": "Science & Technology"
+        },
         "privacy": "public",
+        "license": "youtube",
         "madeForKids": false,
         "notifySubscribers": true,
         "embedding": true,
+        "paidPromotions": false,
         "tags": ["product", "demo", "tutorial"]
       },
       "schedule": {

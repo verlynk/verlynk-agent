@@ -109,6 +109,8 @@ curl -s -X POST "https://verlynk.com/api/v1/media/$MEDIA_ID/complete" \
 | `type: document` | `fileType: application` |
 | MIME from request | `contentType` (use `image/jpeg` not `image/jpg` on posts) |
 
+**YouTube / local video:** always use this CLI/`mediaId` shape. YouTube also requires `category: { id, name }` on the post. See [`examples/create-youtube-post.json`](./examples/create-youtube-post.json) and [Create Video Post](https://docs.verlynk.com/prompt-examples/posts/create-video-post).
+
 ---
 
 ## MCP `create-posts` shape
